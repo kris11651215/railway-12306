@@ -1,0 +1,75 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "应用存活",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "railway_up", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"},
+      "fieldConfig": {"defaults": {"thresholds": {"steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}}}
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "JVM 线程数",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "railway_jvm_threads", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "进程运行时长(秒)",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "railway_jvm_uptime_seconds", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"}
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "GC 次数",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "railway_jvm_gc_collections_total", "refId": "A"}],
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "堆内存使用",
+      "gridPos": {"h": 9, "w": 16, "x": 0, "y": 6},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "railway_jvm_heap_used_bytes", "legendFormat": "used", "refId": "A"},
+        {"expr": "railway_jvm_heap_committed_bytes", "legendFormat": "committed", "refId": "B"},
+        {"expr": "railway_jvm_heap_max_bytes", "legendFormat": "max", "refId": "C"}
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "系统负载",
+      "gridPos": {"h": 9, "w": 8, "x": 16, "y": 6},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {"expr": "railway_system_load_average", "legendFormat": "load1", "refId": "A"}
+      ]
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "tags": ["railway", "jvm"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "timezone": "browser",
+  "title": "Railway 12306 应用概览",
+  "uid": "railway-overview",
+  "version": 1
+}

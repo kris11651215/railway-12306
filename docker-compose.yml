@@ -1,0 +1,188 @@
+name: railway-12306
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: railway-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-railway123}
+      MYSQL_DATABASE: railway
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - railway-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: railway-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - railway-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: railway-12306:latest
+    container_name: railway-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      TZ: Asia/Shanghai
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/railway?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+      DB_USERNAME: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-railway123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RAILWAY_REDIS_MODE: redis
+      RAILWAY_GRAB_ORDER_STORE: db
+      RAILWAY_ROUTE_MODE: db
+      RAILWAY_AI_DATA_MODE: db
+      RAILWAY_AI_MODE: ${RAILWAY_AI_MODE:-mock}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/internal/metrics || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - railway-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: railway-nginx
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/nginx-health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - railway-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: railway-prometheus
+    profiles: ["monitoring"]
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - railway-net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: railway-grafana
+    profiles: ["monitoring"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-railway123}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - railway-net
+
+  skywalking-oap:
+    image: apache/skywalking-oap-server:10.0.1
+    container_name: railway-skywalking-oap
+    profiles: ["tracing"]
+    environment:
+      SW_STORAGE: h2
+      TZ: Asia/Shanghai
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    networks:
+      - railway-net
+
+  skywalking-ui:
+    image: apache/skywalking-ui:10.0.1
+    container_name: railway-skywalking-ui
+    profiles: ["tracing"]
+    environment:
+      SW_OAP_ADDRESS: http://skywalking-oap:12800
+    ports:
+      - "8090:8080"
+    depends_on:
+      - skywalking-oap
+    networks:
+      - railway-net
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.1
+    container_name: railway-rocketmq-namesrv
+    profiles: ["mq"]
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+    networks:
+      - railway-net
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.1
+    container_name: railway-rocketmq-broker
+    profiles: ["mq"]
+    command: sh mqbroker -n rocketmq-namesrv:9876
+    environment:
+      NAMESRV_ADDR: rocketmq-namesrv:9876
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - "10911:10911"
+    networks:
+      - railway-net
+
+volumes:
+  mysql-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  railway-net:
+    driver: bridge

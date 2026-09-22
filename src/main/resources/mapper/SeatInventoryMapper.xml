@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.railway.mapper.SeatInventoryMapper">
+
+    <resultMap id="SeatInventoryMap" type="SeatInventory">
+        <id column="id" property="id"/>
+        <result column="train_id" property="trainId"/>
+        <result column="travel_date" property="travelDate"/>
+        <result column="seat_type" property="seatType"/>
+        <result column="from_station_order" property="fromStationOrder"/>
+        <result column="to_station_order" property="toStationOrder"/>
+        <result column="total_count" property="totalCount"/>
+        <result column="remaining_count" property="remainingCount"/>
+        <result column="price" property="price"/>
+        <result column="version" property="version"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="selectSegmentsForUpdate" resultMap="SeatInventoryMap">
+        SELECT id, train_id, travel_date, seat_type, from_station_order, to_station_order,
+               total_count, remaining_count, price, version, updated_at
+        FROM seat_inventory
+        WHERE train_id = #{trainId}
+          AND travel_date = #{travelDate}
+          AND seat_type = #{seatType}
+          AND from_station_order &gt;= #{fromOrder}
+          AND to_station_order &lt;= #{toOrder}
+        ORDER BY from_station_order
+        FOR UPDATE
+    </select>
+
+    <update id="deductRange">
+        UPDATE seat_inventory
+        SET remaining_count = remaining_count - 1,
+            version = version + 1
+        WHERE train_id = #{trainId}
+          AND travel_date = #{travelDate}
+          AND seat_type = #{seatType}
+          AND from_station_order &gt;= #{fromOrder}
+          AND to_station_order &lt;= #{toOrder}
+          AND remaining_count &gt;= 1
+    </update>
+</mapper>

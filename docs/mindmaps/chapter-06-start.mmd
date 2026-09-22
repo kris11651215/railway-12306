@@ -1,0 +1,63 @@
+mindmap
+  root((第6章 AI融合核心 🔄))
+    本章目标
+      智能购票助手 🤖
+      候补智能调配与加开建议
+      广铁2小时决策闭环 📍
+      交通接驳引导
+      本地RAG问答
+      AI主线L3-L4 ⭐
+    核心知识点
+      LLM API
+        DeepSeek与Kimi
+        OpenAI兼容协议
+        超时重试与降级 🔥
+        Mock兜底
+      Prompt Engineering
+        系统提示词约束
+        禁止编造数据
+        结构化输出
+      Function Calling ⭐🔥
+        工具定义JSON Schema
+        意图解析与工具选择
+        后端接口真实调用
+        结果回填与总结
+      RAG
+        检索增强是什么
+        Embedding哈希向量
+        本地轻量向量库
+        余弦相似度与标题加成
+        TopK与相关性过滤
+      Spring Scheduler
+        定时扫描候补表
+        fixedDelay与initialDelay
+      数据聚合
+        SQL按OD日期分组
+        积压指数与阈值
+        结构化加开报告
+    代码产出
+      POST /api/ai/chat 📦
+      候补加开建议接口 📦
+      GET /api/travel-guide 📦
+      规章问答接口 📦
+      LlmGateway降级网关 📦
+      本地向量库与知识库 📦
+    验收标准
+      自然语言查票返回结构化车次 🎯
+      候补生成加开XX方向报告 🎯
+      购票后接驳推荐 🎯
+      Function Calling正确调用后端 🎯
+      RAG回答客运规章 🎯
+    与前后章关联
+      复用第3章车次查询与第5章换乘
+      复用第5章站内规则做接驳
+      第2章候补表提供聚合数据
+      启 第7章部署与监控
+    预计耗时
+      第9-10周
+      约5-7天
+    重点难点
+      Function Calling真实调用 🧠
+      无Key离线Mock跑通 ⭐
+      积压指数与阈值设计
+      向量检索相关性过滤 🧠

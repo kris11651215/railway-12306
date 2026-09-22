@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.railway.mapper.StationMapper">
+
+    <resultMap id="StationMap" type="Station">
+        <id column="id" property="id"/>
+        <result column="station_code" property="stationCode"/>
+        <result column="station_name" property="stationName"/>
+        <result column="city" property="city"/>
+        <result column="bureau" property="bureau"/>
+        <result column="affiliated_depot" property="affiliatedDepot"/>
+        <result column="station_class" property="stationClass"/>
+        <result column="is_hub" property="hub"/>
+    </resultMap>
+
+    <select id="selectByName" resultMap="StationMap">
+        SELECT id, station_code, station_name, city, bureau,
+               affiliated_depot, station_class, is_hub
+        FROM station
+        WHERE station_name = #{stationName}
+    </select>
+</mapper>

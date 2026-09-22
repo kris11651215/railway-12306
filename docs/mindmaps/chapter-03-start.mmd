@@ -1,0 +1,44 @@
+mindmap
+  root((第3章 MyBatis整合 🔄))
+    本章目标
+      MyBatis整合到REST接口 L3
+      Spring事务原理与失效场景 L4
+      车次查询接口 📦
+      下单扣库存事务 📦
+    核心知识点
+      MyBatis L3
+        Mapper接口与XML
+        参数绑定 #{}与${}
+        动态SQL if where foreach
+        ResultMap与列映射
+      Spring Boot自动配置
+        starter与依赖引入
+        SqlSessionFactory自动装配
+        mapper-locations与别名
+      Spring事务 L4
+        @Transactional代理原理
+        传播行为七种
+        失效场景八类 🧠
+        隔离级别与回滚规则
+        下单扣库存防超卖 ⭐🔥
+    代码产出
+      application.yml数据源配置 📦
+      TrainMapper动态SQL 📦
+      GET /api/trains车次查询 📦
+      POST /api/orders事务下单 📦
+      API设计文档 📦
+    验收标准
+      curl返回车次列表 🎯
+      扣库存与订单同成败 🎯
+      人为异常两步都回滚 🎯
+      解释@Transactional失效 🎯
+    与前后章关联
+      承 第2章七张表与SQL
+      启 第4章并发与分布式锁
+    预计耗时
+      第3-4周后段
+      约3-4天
+    重点难点
+      动态SQL拼装 ⭐
+      事务回滚验证 ⭐
+      自调用与private方法失效 🧠

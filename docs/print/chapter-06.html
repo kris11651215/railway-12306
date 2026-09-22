@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第6章 AI融合核心 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第6章 AI融合核心"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第6章 AI融合核心</span>
+</header>
+<main class="chapter">
+<h1>第6章 AI融合核心</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第9-10周，约5-7天<br />
+深度：AI 主线 L3-L4（LLM API、Prompt Engineering、Function Calling、RAG、Embedding、向量库、Scheduler、结构化报告）<br />
+一句话：让大模型只做"理解与表达"，所有实时数据都由它调用后端接口拿，再把结果组织成回答；候补积压用真实 SQL 聚合出报告，按广铁"30 分钟出报告、2 小时决策"的节奏给出加开建议；购票后按广州南站规则给出接驳引导；客运规章用本地轻量 RAG 回答。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-06-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-06-start.mmd -o docs/print/assets/chapter-06-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第6章 AI融合核心 🔄</strong><ul><li>本章目标<ul><li>智能购票助手 🤖</li><li>候补智能调配与加开建议</li><li>广铁2小时决策闭环 📍</li><li>交通接驳引导</li><li>本地RAG问答</li><li>AI主线L3-L4 ⭐</li></ul></li><li>核心知识点<ul><li>LLM API<ul><li>DeepSeek与Kimi</li><li>OpenAI兼容协议</li><li>超时重试与降级 🔥</li><li>Mock兜底</li></ul></li><li>Prompt Engineering<ul><li>系统提示词约束</li><li>禁止编造数据</li><li>结构化输出</li></ul></li><li>Function Calling ⭐🔥<ul><li>工具定义JSON Schema</li><li>意图解析与工具选择</li><li>后端接口真实调用</li><li>结果回填与总结</li></ul></li><li>RAG<ul><li>检索增强是什么</li><li>Embedding哈希向量</li><li>本地轻量向量库</li><li>余弦相似度与标题加成</li><li>TopK与相关性过滤</li></ul></li><li>Spring Scheduler<ul><li>定时扫描候补表</li><li>fixedDelay与initialDelay</li></ul></li><li>数据聚合<ul><li>SQL按OD日期分组</li><li>积压指数与阈值</li><li>结构化加开报告</li></ul></li></ul></li><li>代码产出<ul><li>POST /api/ai/chat 📦</li><li>候补加开建议接口 📦</li><li>GET /api/travel-guide 📦</li><li>规章问答接口 📦</li><li>LlmGateway降级网关 📦</li><li>本地向量库与知识库 📦</li></ul></li><li>验收标准<ul><li>自然语言查票返回结构化车次 🎯</li><li>候补生成加开XX方向报告 🎯</li><li>购票后接驳推荐 🎯</li><li>Function Calling正确调用后端 🎯</li><li>RAG回答客运规章 🎯</li></ul></li><li>与前后章关联<ul><li>复用第3章车次查询与第5章换乘</li><li>复用第5章站内规则做接驳</li><li>第2章候补表提供聚合数据</li><li>启 第7章部署与监控</li></ul></li><li>预计耗时<ul><li>第9-10周</li><li>约5-7天</li></ul></li><li>重点难点<ul><li>Function Calling真实调用 🧠</li><li>无Key离线Mock跑通 ⭐</li><li>积压指数与阈值设计</li><li>向量检索相关性过滤 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>LLM 接入</td><td>DeepSeek/Kimi OpenAI 兼容客户端，超时/重试/降级</td><td>API 不可用时自动降级 Mock，不阻塞</td></tr>
+<tr><td>Function Calling</td><td>3 个工具 + 意图解析 + 真实调用后端</td><td>"4月15日北京到上海"返回结构化车次</td></tr>
+<tr><td>智能购票助手</td><td><code>POST /api/ai/chat</code></td><td>自然语言查询返回车次/换乘/规章</td></tr>
+<tr><td>候补智能调配</td><td><code>GET /api/ai/candidate-suggestion?date=</code></td><td>SQL 聚合 + 积压指数 + 加开报告</td></tr>
+<tr><td>广铁特色</td><td>30 分钟出报告、2 小时决策窗口</td><td>报告含方向、编组、上座率、置信度</td></tr>
+<tr><td>交通接驳</td><td><code>GET /api/travel-guide</code></td><td>输出地铁出口、进站平台、检票口、拥堵</td></tr>
+<tr><td>RAG 知识库</td><td>本地哈希向量 + 轻量向量库 + 规章问答</td><td>退票/儿童票等问题命中正确文档</td></tr>
+<tr><td>定时任务</td><td>Spring Scheduler 扫描候补</td><td>每小时扫描并缓存报告</td></tr>
+<tr><td>测试</td><td>32 个新增 JUnit5 测试</td><td><code>.\mvnw.cmd test</code> 全部通过</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>开头导图：<code>docs/mindmaps/chapter-06-start.mmd</code></li>
+<li>接口文档：<code>docs/architecture/02-api-design.md</code> v1.3</li>
+<li>复用第5章：<code>docs/chapters/chapter-05.md</code>（换乘与站内规则）</li>
+<li>候补表结构：<code>docs/architecture/01-database-design.md</code></li>
+</ul>
+<hr />
+<h2>6.0 实验环境与降级策略</h2>
+<table>
+<thead>
+<tr><th>组件</th><th>本机状态</th><th>处理方式</th></tr>
+</thead>
+<tbody>
+<tr><td>DeepSeek/Kimi API</td><td>无 API Key</td><td><code>railway.ai.mode=mock</code>，本地规则引擎跑通全流程，<code>degraded=true</code> 标记</td></tr>
+<tr><td>MySQL</td><td>未运行</td><td><code>railway.ai.data-mode=memory</code>，用与 <code>sql/init.sql</code> 一致的样例数据；DB 聚合 SQL 已写好</td></tr>
+<tr><td>向量数据库</td><td>未安装</td><td>本地 <code>InMemoryVectorStore</code> + 哈希 Embedding，不下载大模型</td></tr>
+<tr><td>Embedding 模型</td><td>未下载</td><td>字符 bigram 哈希到 512 维向量，余弦相似度检索</td></tr>
+<tr><td>8080 服务</td><td>未运行</td><td>未做 HTTP 实测，结论来自 JUnit5 直接调用 Service</td></tr>
+</tbody>
+</table>
+<p>三个开关：</p>
+<pre><code class="language-yaml">railway:
+  ai:
+    mode: mock              # mock: 本地规则引擎 | remote: 真实大模型API
+    data-mode: memory       # memory: 内存样例 | db: MySQL真实聚合
+    scheduler-enabled: true # 候补定时扫描开关</code></pre>
+<p><strong>降级设计</strong>：<code>LlmGateway</code> 包装主客户端与 Mock 客户端，主客户端超时/报错时按 <code>max-retries</code> 重试，仍失败则自动切到 Mock，并在响应中把 <code>degraded</code> 标记为 <code>true</code>，接口永远有结果、不空转。</p>
+<hr />
+<h2>6.1 AI 是主线，不是孤立模块</h2>
+<p>第6章的 AI 不"自己编数据"，而是站在前面几章的肩膀上：</p>
+<pre><code class="language-text">用户说"4月15日北京到上海"
+  └─ LLM 解析意图 → 调用 query_trains
+       └─ 第3章的车次查询能力（DB 或内存样例）返回真实车次/余票/票价
+用户说"上海虹桥到杭州东最快怎么走"
+  └─ LLM 调用 query_transfer_routes
+       └─ 第5章的时间扩展图 + Dijkstra 返回换乘方案
+用户问"退票费怎么收"
+  └─ LLM 调用 search_knowledge_base
+       └─ 本地 RAG 检索规章知识库
+候补加开建议
+  └─ 第2章的 candidate 表真实 SQL 聚合 → 积压指数 → 结构化报告
+交通接驳
+  └─ 第5章站内规则引擎 → 检票口/走行路线 → 叠加地铁出口与拥堵提示</code></pre>
+<p>面试表达：<strong>"传统技术是支撑 AI 决策的基础设施"</strong>——LLM 负责理解与表达，实时数据、路径算法、库存与候补分析仍然由后端系统保证正确性。</p>
+<hr />
+<h2>6.2 调用大模型 API（DeepSeek / Kimi）</h2>
+<h3>6.2.1 是什么</h3>
+<p>DeepSeek、Kimi 都提供 OpenAI 兼容的 <code>POST /chat/completions</code>：</p>
+<pre><code class="language-text">POST https://api.deepseek.com/v1/chat/completions
+Authorization: Bearer &lt;API_KEY&gt;
+
+{
+  "model": "deepseek-chat",
+  "messages": [
+    {"role": "system", "content": "你是铁路购票助手..."},
+    {"role": "user", "content": "4月15日北京到上海"}
+  ],
+  "tools": [ ... ],
+  "tool_choice": "auto",
+  "temperature": 0.2
+}</code></pre>
+<p>响应里 <code>choices[0].message</code> 既可能是 <code>content</code>（直接回答），也可能是 <code>tool_calls</code>（要求调用工具）。</p>
+<h3>6.2.2 为什么需要工程化封装</h3>
+<p>直接 <code>HttpClient</code> 裸调有三个坑：</p>
+<ol>
+<li><strong>网络不可控</strong>：必须设置连接超时与读取超时，否则线程被拖死；</li>
+<li><strong>抖动</strong>：偶发 5xx/超时要有重试上限，重试仍失败要有降级；</li>
+<li><strong>Key 泄漏</strong>：绝不能把 Key 写进代码或提交到 Git。</li>
+</ol>
+<p>本项目的做法：</p>
+<pre><code class="language-java">HttpClient.newBuilder()
+        .connectTimeout(Duration.ofMillis(properties.getConnectTimeoutMillis()))
+        .build();
+HttpRequest.newBuilder(URI.create(properties.getBaseUrl() + "/chat/completions"))
+        .timeout(Duration.ofMillis(properties.getReadTimeoutMillis()))
+        .header("Authorization", "Bearer " + properties.getApiKey())
+        .POST(...)
+        .build();</code></pre>
+<p>配置项：</p>
+<pre><code class="language-yaml">railway:
+  ai:
+    mode: remote
+    provider: deepseek
+    base-url: https://api.deepseek.com/v1
+    api-key: ${DEEPSEEK_API_KEY:}
+    model: deepseek-chat
+    connect-timeout-millis: 3000
+    read-timeout-millis: 15000
+    max-retries: 2</code></pre>
+<p><code>${DEEPSEEK_API_KEY:}</code> 从环境变量读 Key，取不到就是空串；空 Key 时 <code>AiConfig</code> 直接把 Mock 当主客户端，避免发无效请求。</p>
+<h3>6.2.3 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>接口一直转圈</td><td>没设读取超时</td><td>检查 <code>read-timeout-millis</code></td></tr>
+<tr><td>401/403</td><td>Key 无效或没带上</td><td>确认环境变量与 <code>Authorization</code> 头</td></tr>
+<tr><td>400 model 不存在</td><td>模型名写错</td><td>DeepSeek 用 <code>deepseek-chat</code>/<code>deepseek-reasoner</code></td></tr>
+<tr><td>偶发 5xx 全失败</td><td>无重试</td><td><code>max-retries</code> 配合指数退避</td></tr>
+<tr><td>响应 <code>degraded=true</code></td><td>已自动降级 Mock</td><td>看日志中重试失败原因，属于预期兜底</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.3 Prompt Engineering</h2>
+<h3>6.3.1 是什么</h3>
+<p>Prompt 是给模型的"工作说明书"。本项目系统提示词只有三条硬约束：</p>
+<pre><code class="language-text">1. 你是铁路智慧出行服务平台的智能购票助手；
+2. 涉及车次、余票、票价、换乘、候补等实时数据时，必须调用提供的工具，禁止编造数据；
+3. 回答使用简洁的中文，可引用工具返回的真实字段。</code></pre>
+<h3>6.3.2 为什么这样写</h3>
+<p>大模型最大的风险是"一本正经地胡说"：它可能编出一个不存在的 G9999。把"必须调用工具、禁止编造"写进 system prompt，再配合 Function Calling 的接口约束，才能让答案建立在真实数据上。</p>
+<p>工程上的三个技巧：</p>
+<ul>
+<li><strong>角色明确</strong>：限定领域，减少无关知识输出；</li>
+<li><strong>行为约束</strong>：明确什么必须做（调工具）、什么禁止做（编数据）；</li>
+<li><strong>输出风格</strong>：中文、简洁、可引用字段。</li>
+</ul>
+<h3>6.3.3 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>模型不调工具，直接臆造车次</td><td>提示词没约束或工具描述不清</td><td>强化 system prompt；把工具 description 写清楚</td></tr>
+<tr><td>参数乱填（站名不存在）</td><td>缺少参数说明与枚举</td><td>在工具 schema 的 description 里给示例</td></tr>
+<tr><td>回答啰嗦/中英混杂</td><td>未限定语言与风格</td><td>prompt 明确"简洁中文"</td></tr>
+<tr><td>输出不稳定</td><td>温度过高</td><td>数据类任务 <code>temperature=0.2</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.4 Function Calling（本章核心）</h2>
+<h3>6.4.1 是什么</h3>
+<p>Function Calling 让模型输出一个"要调用哪个函数、参数是什么"的结构化请求，真正的函数执行由你的后端完成：</p>
+<pre><code class="language-text">用户输入
+  → LLM 输出 tool_calls: [{name: "query_trains", arguments: {from: "北京南", to: "上海虹桥", date: "2026-04-15"}}]
+  → 后端执行 QueryTrainsTool → 查真实数据
+  → 把结果回填给 LLM
+  → LLM 用自然语言总结</code></pre>
+<p>模型只负责"选择与解析"，数据永远来自后端。</p>
+<h3>6.4.2 本项目的三个工具</h3>
+<table>
+<thead>
+<tr><th>工具</th><th>参数</th><th>后端能力</th><th>来源章节</th></tr>
+</thead>
+<tbody>
+<tr><td><code>query_trains</code></td><td>from, to, date, seatType</td><td>车次、余票、票价</td><td>第3章</td></tr>
+<tr><td><code>query_transfer_routes</code></td><td>from, to, strategy, date</td><td>中转换乘方案</td><td>第5章</td></tr>
+<tr><td><code>search_knowledge_base</code></td><td>question</td><td>客运规章 RAG 检索</td><td>本章</td></tr>
+</tbody>
+</table>
+<p>工具定义（JSON Schema 由 <code>ToolDefinition</code> 生成）：</p>
+<pre><code class="language-java">return new ToolDefinition("query_trains", "按出发站、到达站、日期查询可售车次与余票票价", Map.of(
+        "type", "object",
+        "properties", properties,
+        "required", List.of("from", "to")));</code></pre>
+<p>统一接口让新增工具零侵入：</p>
+<pre><code class="language-java">public interface AiTool {
+    ToolDefinition definition();
+    ToolResult execute(Map&lt;String, Object&gt; arguments);
+}</code></pre>
+<p><code>AiToolRegistry</code> 收集所有 <code>AiTool</code> Bean，把定义交给 LLM，把调用分发给对应工具。</p>
+<h3>6.4.3 Mock 模式怎么模拟 Function Calling</h3>
+<p>没有 API Key 时，<code>MockLlmClient</code> 用规则完成同样的三步：</p>
+<ol>
+<li><strong>意图识别</strong>：命中"退票/儿童/规章"等关键词 → 知识库工具；命中"换乘/最快/中转"且识别出两个站名 → 换乘工具；否则识别车站+日期 → 车次工具；</li>
+<li><strong>参数抽取</strong>：正则解析"4月15日/2026-04-15"，<code>StationAlias</code> 把"北京→北京南、上海→上海虹桥"归一化；</li>
+<li><strong>结果组织</strong>：<code>composeAnswer</code> 把工具返回的 <code>TrainVO</code>、<code>TransferPlanVO</code>、<code>RagAnswerVO</code> 拼成中文回复。</li>
+</ol>
+<p>它和真实模型的差别只在"谁来做意图判断"，工具执行链路完全一致，所以离线也能验收 Function Calling。</p>
+<h3>6.4.4 真实调用链路</h3>
+<pre><code class="language-text">AiChatController.chat
+  └─ AiChatService.chat
+       ├─ LlmGateway.plan(message, tools)      ← 主客户端失败自动降级Mock
+       ├─ AiToolRegistry.execute(toolCall)     ← 执行后端真实查询
+       ├─ LlmGateway.compose(message, ...)     ← 基于工具结果生成回答
+       └─ ChatResponseVO(intent, toolCalls, trains/transferPlan/knowledge, degraded)</code></pre>
+<h3>6.4.5 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>模型不调工具</td><td>工具描述不清晰</td><td>补 description 与参数示例</td></tr>
+<tr><td>参数缺失/站名错</td><td>抽取或别名问题</td><td>看 <code>toolCalls[].arguments</code>，补 <code>StationAlias</code></td></tr>
+<tr><td>工具报错但模型仍回答</td><td>未校验 <code>success</code></td><td><code>composeAnswer</code> 对失败结果明确说明原因</td></tr>
+<tr><td>调用错工具</td><td>意图关键词冲突</td><td>调整关键词优先级：知识 → 换乘 → 车次</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.5 实战：智能购票助手 <code>POST /api/ai/chat</code></h2>
+<h3>6.5.1 请求与响应</h3>
+<pre><code class="language-bash">curl -X POST http://localhost:8080/api/ai/chat \
+     -H "Content-Type: application/json" \
+     -d '{"message":"4月15日北京到上海"}'</code></pre>
+<p>响应（JUnit 实测）：</p>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": {
+    "reply": "已为你查询到 1 趟车次：\n- G1 09:00-13:28，历时268分钟，二等座余3张，716.50元",
+    "intent": {
+      "type": "trains",
+      "fromStation": "北京南",
+      "toStation": "上海虹桥",
+      "travelDate": "2026-04-15",
+      "strategy": ""
+    },
+    "toolCalls": [
+      {
+        "name": "query_trains",
+        "arguments": {"from": "北京南", "to": "上海虹桥", "date": "2026-04-15"},
+        "success": true,
+        "summary": "查询到 1 趟车次"
+      }
+    ],
+    "trains": [
+      {
+        "trainNo": "G1",
+        "fromStation": "北京南",
+        "toStation": "上海虹桥",
+        "departureTime": "09:00:00",
+        "arrivalTime": "13:28:00",
+        "durationMinutes": 268,
+        "seatType": "二等座",
+        "remainingCount": 3,
+        "totalPrice": 716.50
+      }
+    ],
+    "degraded": true,
+    "provider": "mock"
+  },
+  "timestamp": 1789451572301
+}</code></pre>
+<h3>6.5.2 换乘与规章</h3>
+<pre><code class="language-text">输入：上海虹桥到杭州东最快怎么走
+回复：为你规划了最快方案（共1次换乘）：
+      1. G2 上海虹桥 07:00 → 南京南 08:23（83分钟，139.50元）
+      换乘等待 163 分钟
+      2. G11 南京南 11:06 → 杭州东 12:48（102分钟，220.50元）
+      总历时 348 分钟，总价 360.00 元
+
+输入：退票要提前多久
+回复：根据《退票规则》：旅客不能按票面指定的日期、车次乘车时，可以在票面发站办理退票...
+引用：退票规则（score 0.1651）</code></pre>
+<p><code>degraded=true</code> + <code>provider=mock</code> 说明当前是本地 Mock 模式；配置真实 Key 后切 <code>mode=remote</code>，同一接口返回真实大模型的表达，但结构化字段与工具调用记录保持一致。</p>
+<h3>6.5.3 错误响应</h3>
+<table>
+<thead>
+<tr><th>场景</th><th>code</th><th>message</th></tr>
+</thead>
+<tbody>
+<tr><td>message 缺失/空白</td><td>400</td><td>message 为必填参数</td></tr>
+<tr><td>工具查询无数据</td><td>0</td><td>reply 说明无车次，<code>trains: []</code>（业务成功，无数据）</td></tr>
+<tr><td>主 LLM 失败</td><td>0</td><td>自动降级 Mock，<code>data.degraded=true</code>、<code>provider=mock</code>（HTTP 状态仍为 200）</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.6 RAG 知识库：Embedding 与向量检索</h2>
+<h3>6.6.1 是什么</h3>
+<p>RAG（Retrieval-Augmented Generation，检索增强生成）= <strong>检索</strong> + <strong>生成</strong>：</p>
+<ol>
+<li>把规章文档切成知识块，转成向量存进向量库；</li>
+<li>用户提问时，把问题也转成向量，找最相似的 TopK 知识块；</li>
+<li>让 LLM（或模板）基于检索到的原文回答，并给出引用。</li>
+</ol>
+<h3>6.6.2 为什么要 RAG</h3>
+<p>客运规章经常更新，不可能每次改规章都重新训练模型；直接把整本规章塞进 Prompt 又超长且昂贵。RAG 只把"最相关的几段"喂给模型，答案有出处、可更新。</p>
+<h3>6.6.3 本地轻量实现（离线可跑）</h3>
+<p>环境限制不能下载大模型或向量数据库，本项目用两段轻量实现：</p>
+<p><strong>Embedding：字符 bigram 哈希</strong></p>
+<pre><code class="language-java">for (String token : tokenize(normalizedText)) {
+    int hash = fnv1a(token);
+    int slot = Math.floorMod(hash, DIMENSION);          // 512 维
+    vector[slot] += (hash &amp; 0x100) == 0 ? 1.0 : -1.0;   // 带符号哈希降低碰撞偏置
+}
+// 再做 L2 归一化，余弦相似度 = 点积</code></pre>
+<ul>
+<li>bigram 之外的字符（标点、空格）全部去掉；</li>
+<li><code>tokenize</code> 同时暴露原始 bigram 集合，用于相关性硬过滤。</li>
+</ul>
+<p><strong>向量库：<code>InMemoryVectorStore</code></strong></p>
+<pre><code class="language-java">public void add(KnowledgeDocument document, double[] vector);
+public List&lt;ScoredDocument&gt; search(double[] queryVector, int topK);   // 余弦降序</code></pre>
+<p>知识库文件 <code>src/main/resources/ai/knowledge-base.md</code> 用 <code>## 标题</code> 分块，启动时加载并逐块建向量；当前 14 个知识块，覆盖退票、改签、候补、儿童票、学生票、禁限带、检票、接驳等。</p>
+<p><strong>两层过滤保证相关性</strong>：</p>
+<ol>
+<li>相似度阈值 <code>rag-min-score=0.05</code>（哈希向量噪声下限）；</li>
+<li>硬性 token 重合：问题 bigram 与文档 bigram 至少重合 <code>min(2, 问题token数)</code> 个，避免"量子计算机"之类问题被无关文档误命中；</li>
+<li>标题命中加成 0.03/词，用于排序（退票问题优先命中《退票规则》而不是提到退票的《改签规则》）。</li>
+</ol>
+<h3>6.6.4 实测结果（JUnit）</h3>
+<table>
+<thead>
+<tr><th>问题</th><th>Top1 命中</th><th>分数</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>退票要提前几天，退票费怎么收</td><td>退票规则</td><td>0.1797</td><td>引用规则原文回答</td></tr>
+<tr><td>退票要提前多久</td><td>退票规则</td><td>0.1651</td><td>正确</td></tr>
+<tr><td>儿童票几岁可以买儿童优惠票</td><td>儿童票规则</td><td>0.2449</td><td>正确</td></tr>
+<tr><td>量子计算机的量子比特原理</td><td>无命中</td><td>-</td><td>返回"暂未找到"</td></tr>
+<tr><td>你好</td><td>无命中</td><td>-</td><td>不误触发知识检索</td></tr>
+</tbody>
+</table>
+<h3>6.6.5 真实接入步骤</h3>
+<ol>
+<li><code>Embedding</code> 换成 <code>text-embedding-3-small</code> / <code>bge-m3</code> 等模型接口，保留 <code>embed(String) -&gt; double[]</code> 接口即可；</li>
+<li><code>InMemoryVectorStore</code> 换成 Milvus/Qdrant/pgvector，<code>add/search</code> 语义不变；</li>
+<li>文档加载沿用 <code>##</code> 分块策略，可加入滑动窗口与重叠；</li>
+<li>检索后仍保留 token 重合过滤，作为模型向量之外的兜底。</li>
+</ol>
+<h3>6.6.6 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>总是命中同一篇</td><td>向量区分度不足</td><td>加 bigram+trigram、扩维、换真实 Embedding</td></tr>
+<tr><td>该命中的没命中</td><td>阈值/重合过滤太严</td><td>看 <code>score</code> 与 token 重合数，调 <code>rag-min-score</code></td></tr>
+<tr><td>回答没出处</td><td>未返回 citations</td><td>检查 <code>answer.getCitations()</code> 是否为空</td></tr>
+<tr><td>知识库更新不生效</td><td>启动时加载一次</td><td>重新部署或加定时重载</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.7 候补智能调配</h2>
+<h3>6.7.1 真实 SQL 聚合</h3>
+<p>候补分析不造数据，直接用 <code>candidate</code> 表聚合（<code>CandidateMapper.xml</code>）：</p>
+<pre><code class="language-sql">SELECT fs.station_name        AS from_station,
+       ts.station_name        AS to_station,
+       c.seat_type            AS seat_type,
+       COUNT(*)               AS waiting_count,
+       MIN(c.candidate_time)  AS first_candidate_time
+FROM candidate c
+         JOIN station fs ON fs.id = c.from_station_id
+         JOIN station ts ON ts.id = c.to_station_id
+WHERE c.status = 'WAITING'
+  AND c.travel_date = #{travelDate}
+GROUP BY fs.station_name, ts.station_name, c.seat_type
+ORDER BY waiting_count DESC</code></pre>
+<p>按 <code>travel_date + from + to + seat_type</code> 分组，正好命中第2章设计的 <code>idx_agg</code> 索引；DB 模式走真实 MySQL 聚合（样例数据聚合结果：2026-04-15 广州南→武汉 157、北京南→上海虹桥 154、广州南→深圳北 153，与内存种子一致），内存模式使用对齐的模拟种子数据（<code>MemoryCandidateBacklogRepository</code>，标注“模拟验证”），两模式响应字段与报告口径完全一致。</p>
+<h3>6.7.2 积压指数</h3>
+<p>积压不能只看人数，还要看席别权重与日期紧迫度：</p>
+<pre><code class="language-text">积压指数 = 候补人数 × 席别权重 × 日期紧迫系数
+
+席别权重：二等座1.0、硬座0.9、硬卧0.8、软卧0.7、一等座0.6、商务座0.4
+日期紧迫：≤3天 1.3、≤7天 1.15、≤15天 1.05、其他 1.0
+阈值：100（railway.ai.backlog-threshold）</code></pre>
+<p>超过阈值才进入报告，按指数降序取 TopN（默认 5）。</p>
+<h3>6.7.3 结构化加开报告</h3>
+<p>接口：</p>
+<pre><code class="language-bash">curl "http://localhost:8080/api/ai/candidate-suggestion?date=2026-04-15"</code></pre>
+<p>响应结构（内存模式实测，2026-04-15）：</p>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": {
+    "date": "2026-04-15",
+    "generatedAt": "2026-09-15T20:30:00",
+    "reportDeadline": "2026-09-15T21:00:00",
+    "decisionDeadline": "2026-09-15T22:30:00",
+    "reportReadyMinutes": 30,
+    "decisionWindowMinutes": 120,
+    "threshold": 100.0,
+    "scannedOdCount": 5,
+    "overThresholdCount": 3,
+    "summary": "2026-04-15 共扫描 5 个候补OD方向，3 个方向超过积压阈值，建议优先处理：广州南→武汉（二等座候补157人，加开列车）；北京南→上海虹桥（二等座候补154人，加开列车）... 报告已生成，30分钟内可流转，2小时内可完成加开决策。",
+    "items": [
+      {
+        "fromStation": "广州南",
+        "toStation": "武汉",
+        "seatType": "二等座",
+        "waitingCount": 157,
+        "backlogIndex": 157.0,
+        "actionType": "ADD_TRAIN",
+        "actionName": "加开列车",
+        "suggestedFormation": "16节",
+        "estimatedLoadFactor": 0.707,
+        "confidence": 0.82,
+        "reason": "候补积压指数 157.0 超过加开阈值 150.0，建议加开 广州南→武汉 方向列车"
+      }
+    ]
+  },
+  "timestamp": 1789451572301
+}</code></pre>
+<p>字段设计说明：</p>
+<ul>
+<li><code>actionType</code>：指数 ≥150 建议加开（ADD_TRAIN），否则建议票额调配（REALLOCATE_QUOTA，"长途票额调配短途或加挂"）；</li>
+<li><code>suggestedFormation</code>：≥300 人重联 16 节（2 组），≥150 人 16 节，否则 8 节；</li>
+<li><code>estimatedLoadFactor</code>：<code>min(0.98, 0.55 + 指数/1000)</code>，预估上座率；</li>
+<li><code>confidence</code>：<code>min(0.97, 0.60 + log10(人数+1)/10)</code>，样本越多置信度越高。</li>
+</ul>
+<hr />
+<h2>6.8 广铁特色：2 小时加开响应</h2>
+<h3>6.8.1 业务背景</h3>
+<p>广铁（广州局集团）长沙南站用 12306 候补大数据实时分析各方向积压，精准加开列车，运力决策响应最快 2 小时。我们把这条业务链条固化成系统的 SLA：</p>
+<pre><code class="language-text">T+0min     定时扫描候补表（每小时一次，可配置）
+T+~1min    SQL 聚合 + 积压指数计算
+T+30min    加开建议报告完成流转（reportDeadline）
+T+120min   决策窗口关闭（decisionDeadline），完成加开/调配决策</code></pre>
+<p>报告里的 <code>reportReadyMinutes=30</code>、<code>decisionWindowMinutes=120</code> 就是这条承诺的量化体现。</p>
+<h3>6.8.2 定时扫描</h3>
+<pre><code class="language-java">@Scheduled(initialDelayString = "${railway.ai.candidate-scan-initial-delay-millis:60000}",
+        fixedDelayString = "${railway.ai.candidate-scan-interval-millis:3600000}")
+public void scan() {
+    LocalDate today = LocalDate.now();
+    CandidateSuggestionVO suggestion = candidateAnalysisService.analyze(today);
+    suggestionStore.put(today, suggestion);
+    log.info("候补定时扫描完成：date={}, 扫描方向={}, 超阈值={}", ...);
+}</code></pre>
+<ul>
+<li><code>@EnableScheduling</code> 加在 <code>AiConfig</code>；</li>
+<li><code>initialDelay</code> 60 秒：避免应用启动时立刻扫描影响启动；</li>
+<li><code>fixedDelay</code> 1 小时：固定间隔而非 cron，任务耗时不影响下一轮；</li>
+<li>扫描结果进 <code>CandidateSuggestionStore</code>，接口优先读缓存，未命中时实时计算；</li>
+<li>扫描方法整个 try/catch，单次失败不中断调度线程。</li>
+</ul>
+<h3>6.8.3 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>定时任务没执行</td><td>未开 <code>@EnableScheduling</code> 或开关为 false</td><td>检查 <code>scheduler-enabled</code></td></tr>
+<tr><td>报告时间是错的</td><td>服务器时区不对</td><td>统一 <code>Asia/Shanghai</code></td></tr>
+<tr><td>扫描把 CPU 打满</td><td>聚合没走索引</td><td>确认 <code>idx_agg(travel_date, from_station_id, to_station_id, status)</code></td></tr>
+<tr><td>重复生成报告</td><td>缓存 key 不匹配</td><td>缓存按 <code>yyyy-MM-dd</code> 字符串存</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.9 交通接驳智能引导</h2>
+<h3>6.9.1 是什么</h3>
+<p>购票成功后（或出行前），输入车次号、出发站、用户位置，返回：</p>
+<pre><code class="language-text">推荐地铁出口 + 进站平台 + 检票口 + 走行路线 + 步行时间 + 实时拥堵提示 + 建议到站时间</code></pre>
+<p>接口：</p>
+<pre><code class="language-bash">curl "http://localhost:8080/api/travel-guide?trainNo=G1102&amp;fromStation=广州南&amp;userLocation=地铁2号线"</code></pre>
+<p>实测（JUnit，08:00 早高峰）：</p>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": {
+    "trainNo": "G1102",
+    "fromStation": "广州南",
+    "userLocation": "地铁2号线",
+    "metroLine": "地铁2号线",
+    "metroExit": "D 出口",
+    "metroTip": "出闸后经中央扶梯上 2F 进站平台",
+    "entryPlatform": "2F 西进站平台（B 区检票口）",
+    "recommendedGate": "B16",
+    "walkingRoute": "2F北进站口→西安检区→B16检票口→7站台",
+    "walkingMinutes": 6,
+    "congestionLevel": "高峰",
+    "congestionTip": "早高峰，地铁出站与东安检区客流大，建议预留 45 分钟",
+    "suggestedArrivalMinutes": 45
+  },
+  "timestamp": 1789451572301
+}</code></pre>
+<h3>6.9.2 与第5章联动</h3>
+<p>检票口、站台、步行路线直接调用第5章的 <code>StationRouteService</code>（责任链规则引擎）：接驳模块只做两件事——<strong>接驳方式 → 地铁出口/进站平台</strong>、<strong>时段 → 拥堵等级</strong>。这就是"AI 主线带动传统模块"的典型：AI 不需要重写规则引擎，只需组合已有能力。</p>
+<ul>
+<li>接驳映射：地铁2号线→D出口，地铁7号线→H出口，公交→B出口，出租/网约→P1快速接客区，自驾→P3停车场，未识别→B出口并提示以站内标识为准；</li>
+<li>拥堵映射：07:00-09:30 与 17:00-19:30 高峰（建议预留 45 分钟），11:00-13:30 平峰，其余畅通（建议 30 分钟）。</li>
+</ul>
+<h3>6.9.3 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>检票口为空</td><td>车次不在站台映射表</td><td>补 <code>PLATFORM_CATALOG</code> 或改用真实站台数据</td></tr>
+<tr><td>拥堵等级一直是畅通</td><td>测试时间不在高峰段</td><td>用 <code>guide(..., LocalDateTime)</code> 固定时间测试</td></tr>
+<tr><td>出口推荐错误</td><td>位置关键词不匹配</td><td>补关键词映射，保留默认兜底</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.10 降级、边界与可观测</h2>
+<h3>6.10.1 三层降级</h3>
+<table>
+<thead>
+<tr><th>层</th><th>正常</th><th>降级</th></tr>
+</thead>
+<tbody>
+<tr><td>LLM</td><td><code>mode=remote</code> 真实模型</td><td>超时/错误重试后切 Mock，<code>degraded=true</code></td></tr>
+<tr><td>数据</td><td><code>data-mode=db</code> MySQL 真实聚合</td><td>切 <code>memory</code> 样例数据（标注模拟验证）</td></tr>
+<tr><td>向量库</td><td>真实 Embedding + 向量数据库</td><td>本地哈希向量 + 内存库</td></tr>
+</tbody>
+</table>
+<h3>6.10.2 响应可观测字段</h3>
+<ul>
+<li><code>degraded</code>：本次回答是否降级；</li>
+<li><code>provider</code>：实际使用的提供方（mock/deepseek等）；</li>
+<li><code>toolCalls</code>：每个工具的参数、成功与否、结果摘要，便于定位"是模型没调工具，还是工具报错"。</li>
+</ul>
+<hr />
+<h2>6.11 测试与验证</h2>
+<h3>6.11.1 测试清单（本章新增 32 个）</h3>
+<table>
+<thead>
+<tr><th>测试类</th><th>数量</th><th>覆盖</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MockLlmClientTest</code></td><td>5</td><td>车次/换乘/规章意图、日期与站名别名、闲聊不触发</td></tr>
+<tr><td><code>AiChatServiceTest</code></td><td>5</td><td>自然语言查票、换乘、规章、闲聊引导、空消息 400</td></tr>
+<tr><td><code>MemoryTrainQueryPortTest</code></td><td>4</td><td>别名归一、反向车次、无直达、跨天 K599</td></tr>
+<tr><td><code>CandidateAnalysisServiceTest</code></td><td>5</td><td>加开建议、30/120 分钟窗口、确定性、权重与紧迫度、低积压过滤</td></tr>
+<tr><td><code>CandidateAnalysisSchedulerTest</code></td><td>1</td><td>定时扫描写缓存</td></tr>
+<tr><td><code>TravelGuideServiceTest</code></td><td>4</td><td>早高峰/平峰/网约车/参数校验</td></tr>
+<tr><td><code>RagKnowledgeBaseTest</code></td><td>5</td><td>加载、退票命中、儿童票命中、无关问题不命中、空问题 400</td></tr>
+<tr><td><code>HashingEmbeddingTest</code></td><td>3</td><td>相同文本相似度 1、相关大于无关、空文本零向量</td></tr>
+</tbody>
+</table>
+<h3>6.11.2 运行结果</h3>
+<pre><code class="language-bash">.\mvnw.cmd test</code></pre>
+<pre><code class="language-text">Tests run: 74, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS</code></pre>
+<p>累计 74 个测试全部通过（第0-5章 42 个 + 本章 32 个）。</p>
+<h3>6.11.3 验证边界（如实说明）</h3>
+<ul>
+<li>8080 端口未启动，<strong>未做 HTTP 实测</strong>；接口数据来自 JUnit 直接调用 Service；</li>
+<li>DeepSeek/Kimi 真实调用未实测（无 API Key），<code>mode=remote</code> 客户端代码完整，切换步骤见 6.2；</li>
+<li>DB 聚合 SQL 未连 MySQL 实测，内存模式数据与 <code>sql/init.sql</code> 一致。</li>
+</ul>
+<hr />
+<h2>6.12 本章代码地图</h2>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ai/AiProperties.java</code></td><td>AI 配置项（模式、超时、阈值、调度）</td></tr>
+<tr><td><code>ai/AiConfig.java</code></td><td>网关与双模式仓储装配，<code>@EnableScheduling</code></td></tr>
+<tr><td><code>ai/LlmClient.java</code></td><td>LLM 客户端接口（意图 + 回答）</td></tr>
+<tr><td><code>ai/MockLlmClient.java</code></td><td>离线规则引擎，模拟 Function Calling 全链路</td></tr>
+<tr><td><code>ai/DeepSeekLlmClient.java</code></td><td>OpenAI 兼容 HTTP 客户端，超时/重试</td></tr>
+<tr><td><code>ai/LlmGateway.java</code></td><td>重试与降级网关</td></tr>
+<tr><td><code>ai/StationAlias.java</code></td><td>站名别名归一与抽取</td></tr>
+<tr><td><code>ai/AiChatService.java</code></td><td>智能购票助手编排</td></tr>
+<tr><td><code>ai/tool/AiTool.java</code> 等</td><td>工具协议、注册表与三个工具</td></tr>
+<tr><td><code>ai/tool/MemoryTrainQueryPort.java</code></td><td>车次查询内存实现（复用样例时刻表）</td></tr>
+<tr><td><code>ai/rag/*</code></td><td>哈希 Embedding、内存向量库、RAG 知识库</td></tr>
+<tr><td><code>ai/candidate/*</code></td><td>聚合仓储、积压分析、报告、定时扫描</td></tr>
+<tr><td><code>ai/travel/TravelGuideService.java</code></td><td>交通接驳引导</td></tr>
+<tr><td><code>resources/ai/knowledge-base.md</code></td><td>客运规章知识库（14 块）</td></tr>
+<tr><td><code>resources/mapper/CandidateMapper.xml</code></td><td>候补聚合真实 SQL</td></tr>
+<tr><td><code>controller/AiChatController.java</code></td><td><code>/api/ai/chat</code>、<code>/api/ai/knowledge/ask</code></td></tr>
+<tr><td><code>controller/CandidateSuggestionController.java</code></td><td><code>/api/ai/candidate-suggestion</code></td></tr>
+<tr><td><code>controller/TravelGuideController.java</code></td><td><code>/api/travel-guide</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>6.13 高频面试问答</h2>
+<ol>
+<li><strong>"Function Calling 的原理？"</strong></li>
+</ol>
+<p>把工具的名称、描述、参数 JSON Schema 随请求发给模型，模型返回结构化的 <code>tool_calls</code>；后端执行后将结果作为消息回填，模型再生成最终回答。模型不接触真实数据，只做选择与表达。</p>
+<ol>
+<li><strong>"怎么防止 AI 编造车次？"</strong></li>
+</ol>
+<p>双保险：system prompt 明确"必须调用工具、禁止编造"；工具返回真实数据并在回答中引用。即使模型想编，结构化字段 <code>trains</code> 也来自后端，前端可以只信任结构化数据。</p>
+<ol>
+<li><strong>"RAG 的流程？和微调的区别？"</strong></li>
+</ol>
+<p>离线把文档向量化入库，在线检索 TopK 再生成。RAG 适合知识频繁更新、要求可溯源；微调适合风格与能力塑造。成本上 RAG 更低、更新更快。</p>
+<ol>
+<li><strong>"Embedding 怎么做？"</strong></li>
+</ol>
+<p>本教学项目用字符 bigram 哈希到 512 维 + 带符号 + L2 归一化，生产应换成专门 Embedding 模型；向量库把 <code>add/search</code> 抽象好，替换不影响业务。</p>
+<ol>
+<li><strong>"候补积压指数怎么设计？"</strong></li>
+</ol>
+<p>人数 × 席别权重 × 日期紧迫系数，超过阈值进入加开建议；阈值、权重、TopN 都放配置，便于运营调整。</p>
+<ol>
+<li><strong>"AI 服务挂了怎么办？"</strong></li>
+</ol>
+<p>连接/读取超时 + 重试上限 + Mock 降级三层兜底，接口永远可用；响应里 <code>degraded</code> 标记让前端可以提示"当前为智能兜底回答"。</p>
+<ol>
+<li><strong>"为什么用定时任务而不是每次请求实时算？"</strong></li>
+</ol>
+<p>聚合查询有成本且在固定节奏下决策（每小时扫描）；缓存结果让查询接口无压力，实时计算只在缓存未命中时兜底。</p>
+<ol>
+<li><strong>"广铁 2 小时决策在企业项目里怎么体现？"</strong></li>
+</ol>
+<p>报告直接携带 <code>reportDeadline</code>（+30 分钟）与 <code>decisionDeadline</code>（+120 分钟）两个 SLA 时间点，把业务承诺变成可测试的字段。</p>
+<hr />
+<h2>6.14 自检三问</h2>
+<ol>
+<li><strong>是什么</strong>：LLM 客户端负责理解与表达，Function Calling 让模型调用后端真实接口，RAG 用向量检索给规章问答提供依据，Scheduler 定时聚合候补并生成加开报告，接驳服务复用站内规则输出出行引导。</li>
+<li><strong>为什么</strong>：AI 不能凭空造数据，实时性数据必须走传统后端；规章会变，RAG 比微调更灵活；候补决策有节奏，定时聚合 + SLA 字段能对齐广铁 2 小时响应。</li>
+<li><strong>怎么排错</strong>：先看 <code>toolCalls</code> 是否调用、是否成功，再看 <code>degraded/provider</code> 判断是否降级；RAG 不中看 score 与 token 重合；候补报告异常查 SQL 聚合与阈值配置；接驳不准查位置关键词与站台映射。</li>
+</ol>
+<hr />
+<h2>6.15 下一章预告</h2>
+<p><strong>第7章 Linux 部署与运维</strong>：把当前"内存模式跑通"的项目装进 Linux + Docker：写 <code>Dockerfile</code> 与 <code>docker-compose.yml</code> 一键启动 MySQL + Redis + 应用，用 Nginx 反向代理，采集 Prometheus 指标与 SkyWalking 链路，并用 <code>top</code>、<code>jstack</code>、<code>grep/awk</code> 做线上排障。第6章的 Mock/真实双模式会和部署开关对接，真正实现"一条命令启动全项目"。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-06.html</span>
+  <span>第6章 AI融合核心</span>
+</footer>
+</body>
+</html>

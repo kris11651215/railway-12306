@@ -1,0 +1,52 @@
+mindmap
+  root((第6章 AI融合核心 ✅))
+    已掌握
+      Function Calling ⭐🔥
+        工具定义与JSON Schema
+        意图解析到后端调用
+        结果回填与总结
+      LLM工程化
+        超时重试与降级
+        Mock离线兜底
+        DeepSeek兼容协议
+      RAG
+        哈希Embedding 512维
+        余弦加标题加成
+        重合度硬过滤
+        14块客运规章
+      Scheduler
+        每小时扫描候补
+        30分钟报告2小时决策 📍
+      结构化报告
+        积压指数公式
+        加开方向与编组
+        上座率与置信度
+    已产出
+      POST /api/ai/chat 📦
+      规章问答接口 📦
+      候补加开建议接口 📦
+      GET /api/travel-guide 📦
+      LlmGateway与双模式 📦
+      候选聚合SQL与定时任务 📦
+      32个新增JUnit测试 📦
+    验收结果
+      自然语言查票返回G1 🎯
+      广州南到武汉建议加开 🎯
+      接驳推荐地铁D出口 🎯
+      Function Calling调用成功 🎯
+      RAG命中退票规则 🎯
+      74个测试全部通过 🎯
+    踩坑记录
+      降级标记遗漏 🧠
+      单字尾token误命中 🧠
+      标题加成让退票规则排第一 🧠
+      无关问题需token重合过滤 🧠
+    待复习
+      Function Calling协议细节 🔥
+      真实Embedding替换步骤
+      积压指数业务调参
+      多轮对话与上下文
+    下一章衔接
+      第7章 Linux部署与运维
+      Docker一键编排
+      Nginx与监控链路

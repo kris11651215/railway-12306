@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第0章 序章与环境搭建 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第0章 序章与环境搭建"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第0章 序章与环境搭建</span>
+</header>
+<main class="chapter">
+<h1>第0章 序章与环境搭建</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第1-2周前段，约2-3天<br />
+一句话：先懂铁路，再搭台子——让第一行代码跑在真实的业务理解之上。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-00-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-00-start.mmd -o docs/print/assets/chapter-00-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第0章 序章与环境搭建 🔄</strong><ul><li>本章目标<ul><li>建立铁路业务常识 🚂</li><li>认识广铁数智化前沿 📍</li><li>搭好SpringBoot骨架 📦</li><li>沉淀华交项目缘起 🎓</li></ul></li><li>核心知识点<ul><li>铁路业务<ul><li>车次字母与上下行</li><li>席位复用与余票裂变</li><li>票额分配与递远递减</li><li>路网枢纽与同车接续</li></ul></li><li>广铁数智化<ul><li>客运态势感知2.0</li><li>候补加开与95306</li><li>智能CTC与数字孪生</li><li>AI检测与无人机巡检</li></ul></li><li>工程环境<ul><li>JDK17与Maven</li><li>IDEA与Git</li><li>Spring Initializr</li><li>Git分支策略</li></ul></li><li>Maven L2<ul><li>pom与依赖范围</li><li>父子工程</li><li>打包与依赖冲突</li><li>profile切换</li></ul></li></ul></li><li>代码产出<ul><li>SpringBoot骨架 📦</li><li>/hello接口 📦</li><li>本章学习材料 📦</li></ul></li><li>验收标准<ul><li>/hello可访问 🎯</li><li>讲清席位复用 🎯</li><li>讲清票额分配与递远递减 🎯</li><li>文档与导图齐全 🎯</li></ul></li><li>与前后章关联<ul><li>承 项目启动材料</li><li>启 第1章Java实体建模</li></ul></li><li>预计耗时<ul><li>第1-2周前段</li><li>约2-3天</li></ul></li><li>重点难点<ul><li>席位复用与余票裂变 ⭐🧠</li><li>票额分配原则 ⭐🧠</li><li>环境一致性 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>建立铁路业务常识</td><td>能用自己的话解释席位复用、票额分配、递远递减</td><td>口述通过</td></tr>
+<tr><td>认识广铁数智化前沿</td><td>能说出至少 3 个广铁 AI 落地案例</td><td>口述通过</td></tr>
+<tr><td>搭好工程环境</td><td>JDK 17 + Maven + Git，可运行 Spring Boot 骨架</td><td><code>localhost:8080/hello</code> 返回字符串</td></tr>
+<tr><td>沉淀项目叙事</td><td><code>docs/project-origin.md</code></td><td>文档存在且可读</td></tr>
+</tbody>
+</table>
+<p>本章不写业务代码，只做三件事：<strong>懂业务、装环境、搭骨架</strong>。骨架跑通，后面的每一章才有地方落代码。</p>
+<hr />
+<h2>0.1 为什么先学铁路业务</h2>
+<p>12306 难，不在于"增删改查"，而在于业务规则复杂：</p>
+<ul>
+<li>一个座位可以卖给多个人，只要乘车站段不重叠（<strong>席位复用</strong>）；</li>
+<li>票不是随便卖的，始发站和中间站有配额（<strong>票额分配</strong>）；</li>
+<li>票价不是简单的"单价 × 里程"，长途每公里更便宜（<strong>递远递减</strong>）；</li>
+<li>你买不到直达票，系统还得帮你拼换乘（<strong>路径规划</strong>）。</li>
+</ul>
+<p>如果不理解这些规则，写出来的余票查询 SQL 一定是错的。所以本章先把业务地图画出来，第1章之后再用代码一层层实现。</p>
+<hr />
+<h2>0.2 铁路业务常识</h2>
+<h3>0.2.1 车次字母：一张表看懂列车等级</h3>
+<table>
+<thead>
+<tr><th>字母</th><th>含义</th><th>速度等级</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>G</td><td>高速动车组</td><td>最高</td><td>时速 300-350km/h，高铁主力</td></tr>
+<tr><td>D</td><td>动车组</td><td>中高</td><td>时速 200-250km/h，部分走既有线</td></tr>
+<tr><td>C</td><td>城际动车组</td><td>中高</td><td>城市群之间高频短途，如广深城际</td></tr>
+<tr><td>Z</td><td>直达特快</td><td>普速最快</td><td>停站极少，多为夕发朝至</td></tr>
+<tr><td>T</td><td>特快</td><td>普速较快</td><td>停大站，速度次于 Z</td></tr>
+<tr><td>K</td><td>快速</td><td>普速常规</td><td>停站较多，覆盖广</td></tr>
+<tr><td>（无字母）</td><td>普客/普快</td><td>普速最慢</td><td>站站停，价格最低</td></tr>
+</tbody>
+</table>
+<p>记忆要点：<strong>字母代表等级，等级决定路网优先级</strong>。等级越高，调度越优先，晚点时越容易被"保"。</p>
+<p>对项目的影响：车次表 <code>train</code> 需要 <code>train_type</code> 字段；排序时 G &gt; D &gt; C &gt; Z &gt; T &gt; K；抢票模块对不同等级车次的热度不同。</p>
+<h3>0.2.2 上下行：车次单双数的由来</h3>
+<ul>
+<li><strong>上行</strong>：开往北京方向（或支线开往干线方向），车次用<strong>双数</strong>，如 G100、K234。</li>
+<li><strong>下行</strong>：离开北京方向（或干线开往支线方向），车次用<strong>单数</strong>，如 G101、K235。</li>
+</ul>
+<p>同一趟车在途中若改变方向，车次会"变号"。例如某些列车在某站停靠后由上行变下行，车次从 G100 变为 G101。</p>
+<p>对项目的影响：路径规划时不能只看车次号，要结合经停站顺序与方向；数据建模时 <code>train_station</code> 表需要 <code>station_order</code>（站序）字段。</p>
+<h3>0.2.3 席位复用与余票裂变（本章最核心）</h3>
+<p>这是铁路票务区别于普通电商库存的根本所在。</p>
+<p>假设一列 G100 从北京西开往广州南，中途停靠：石家庄、郑州东、武汉、长沙南。一个座位在整条线路上可以拆成多个区段售卖：</p>
+<pre><code>北京西 —— 石家庄 —— 郑州东 —— 武汉 —— 长沙南 —— 广州南
+   A段      B段       C段      D段      E段</code></pre>
+<ul>
+<li>乘客甲买了 北京西 → 郑州东（A+B 段）；</li>
+<li>此时 郑州东 → 武汉、武汉 → 长沙南、长沙南 → 广州南 仍然可以继续卖；</li>
+<li>乘客乙再买 郑州东 → 长沙南，座位就从郑州东开始被乙占用；</li>
+<li>只有当某个区段被占满时，该区段才真正"无票"。</li>
+</ul>
+<p>所以：</p>
+<ul>
+<li>余票 ≠ 总座位数 − 已售张数，而是<strong>按区段分别计算</strong>：某区段余票 = 该区段未被任何乘客占用的座位数。</li>
+<li>一个座位从"一整条"变成"一串可售区段"，仿佛裂变成多张票——这就是<strong>余票裂变</strong>。</li>
+<li>查询"郑州东 → 武汉 有票吗"，本质是问：有没有一个座位的占用区间覆盖了郑州东到武汉这一段。</li>
+</ul>
+<p>对项目的影响（贯穿全项目）：</p>
+<ol>
+<li><code>seat_inventory</code> 表必须按 <strong>车次 + 日期 + 座位类型 + 起始站序 + 终止站序</strong> 记录余票；</li>
+<li>扣减库存时要判断区段重叠，不能简单 <code>stock - 1</code>；</li>
+<li>高并发抢票（第4章）的防超卖难点，正是在"多区段库存一致性"上。</li>
+</ol>
+<h3>0.2.4 票额分配原则：长途优先，兼顾中短途</h3>
+<p>铁路不是"谁先买谁得"，而是有计划的票额投放：</p>
+<ul>
+<li>初期大部分票额分配给<strong>始发站</strong>，优先保障长途旅客（长途旅客选择少，短途旅客有替代方式）；</li>
+<li>中间站只拿到少量票额，保证短途也有票可买；</li>
+<li>临近发车或长途票未售完时，票额会<strong>动态释放</strong>给中间站；</li>
+<li>还有"共用票额"机制：一段区间内的票额可被多个站共享使用。</li>
+</ul>
+<p>对项目的影响：候补分析（第6章）要能识别"长途有票、短途候补积压"的情况，给出<strong>长途票额调配短途</strong>和<strong>动态加开</strong>建议——这正是广铁长沙南实践的核心逻辑。</p>
+<h3>0.2.5 票价递远递减</h3>
+<p>票价不是简单的"每公里单价 × 里程"，而是<strong>里程越长，平均每公里运价率越低</strong>：</p>
+<table>
+<thead>
+<tr><th>里程区间</th><th>平均每公里运价特征</th></tr>
+</thead>
+<tbody>
+<tr><td>短途（如 0-200km）</td><td>单价高</td></tr>
+<tr><td>中途（如 200-1000km）</td><td>递减</td></tr>
+<tr><td>长途（1000km 以上）</td><td>单价最低</td></tr>
+</tbody>
+</table>
+<p>所以"北京 → 上海"的票价，小于"北京 → 南京"+"南京 → 上海"两段票价之和。</p>
+<p>对项目的影响：第5章"<strong>最经济换乘</strong>"策略不能把分段票价简单相加，要按递远递减规则计算，否则会算出一条"绕路但总价看起来便宜"的假最优路线。</p>
+<h3>0.2.6 同车接续</h3>
+<p>直达票卖完了，但同一趟车"北京 → 郑州"和"郑州 → 武汉"都还有票，可以<strong>分段买同一趟车</strong>，中途不下车（可能换座位），这叫同车接续。</p>
+<ul>
+<li>与换乘不同：同车接续不需要换车，只是换席位；</li>
+<li>是候补/购票助手推荐的重要兜底方案；</li>
+<li>实现上：对同一 <code>train_id</code> 检查两段库存都有余即可组合。</li>
+</ul>
+<p>对项目的影响：第5章换乘路径的候选集中，应包含"同车接续"这类路径；第6章 AI 购票助手可以用自然语言提示"可分两段买同一趟车"。</p>
+<h3>0.2.7 路网格局：八纵八横与三横五纵</h3>
+<p><strong>八纵八横</strong>是高铁主通道（2016 年《中长期铁路网规划》）：</p>
+<ul>
+<li>八纵：沿海、京沪、京港（台）、京哈—京港澳、呼南、包（银）海、兰（西）广、京昆；</li>
+<li>八横：绥满、京兰、青银、陆桥、沿江、沪昆、厦渝、广昆。</li>
+</ul>
+<p><strong>三横五纵</strong>是对普速干线东西、南北通道的通俗概括：常见的纵向五大通道如京沪、京广、京九、京哈、焦柳，横向三大通道如京包—包兰、陇海—兰新（陆桥）、沪昆（不同资料口径略有差异）。它与高铁网共同构成"普速保覆盖、高铁保效率"的双层路网。</p>
+<p>对项目的影响：路径规划的数据不是"任意两站随便连"，而是<strong>沿真实线路的图结构</strong>；枢纽站是图中的高连接度节点，换乘大概率发生在枢纽。</p>
+<h3>0.2.8 核心枢纽站</h3>
+<table>
+<thead>
+<tr><th>枢纽</th><th>地位</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>北京</td><td>全国铁路中心</td><td>京沪、京广、京哈等多线交汇，天然的上行方向终点</td></tr>
+<tr><td>上海</td><td>华东枢纽</td><td>京沪、沪昆、沿海通道交汇</td></tr>
+<tr><td>广州</td><td>华南枢纽</td><td>京广、广深港、广珠等交汇，广铁集团所在地</td></tr>
+<tr><td>武汉</td><td>中部枢纽</td><td>"九省通衢"，京广与沿江通道十字交汇</td></tr>
+<tr><td>成都</td><td>西南枢纽</td><td>成渝双城核心，连接西成、成贵等</td></tr>
+<tr><td>西安</td><td>西北枢纽</td><td>陆桥通道与西成、西银等交汇</td></tr>
+<tr><td>郑州</td><td>中原枢纽</td><td>全国唯一的"米"字形高铁网，京广与陆桥交汇</td></tr>
+</tbody>
+</table>
+<p>对项目的影响：换乘算法中，北京、郑州、武汉、广州等是高频中转点；测试用例应优先覆盖这些枢纽。</p>
+<h3>0.2.9 系统架构常识：从 12306 看分布式系统</h3>
+<table>
+<thead>
+<tr><th>概念</th><th>通俗解释</th><th>对项目的启发</th></tr>
+</thead>
+<tbody>
+<tr><td>混合云架构</td><td>核心票务跑私有云（安全、稳定），查询与营销类弹性业务跑公有云（削峰、省钱）</td><td>我们的项目规模小，但要有"读写分离、缓存抗查询压力"的意识</td></tr>
+<tr><td>最终一致性</td><td>不追求每一刻全系统完全一致，允许短暂不一致，但最终一致</td><td>余票查询走缓存，下单以数据库扣减为准，两者允许短暂偏差</td></tr>
+<tr><td>WAL 事务日志</td><td>先写日志再改数据（Write-Ahead Log），崩溃后可按日志恢复</td><td>MySQL 的 redo log 就是 WAL；第2章事务专题重点</td></tr>
+<tr><td>余票扣减写扩散</td><td>买一段票，可能影响多个区段余票记录，写操作被放大</td><td>第4章高并发优化的核心难点之一</td></tr>
+<tr><td>支付与库存一致性</td><td>支付成功但库存没扣、或超时未支付库存没释放，都会出问题</td><td>用"预扣库存 + 超时释放 + 对账"保证最终一致</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>0.3 广铁数智化前沿</h2>
+<p>广铁集团（中国铁路广州局集团有限公司）的数智化走在全路前列，这也是本项目"广铁特色"的来源。以下 10 个案例，第 0 章只需<strong>认识</strong>，第5、6章会挑 3 个深度定制。</p>
+<table>
+<thead>
+<tr><th>#</th><th>案例</th><th>一句话说明</th><th>项目对应</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>客运态势感知平台 2.0</td><td>客流预测准确率提升，支撑"一日一图"动态运力安排</td><td>候补分析的上层目标</td></tr>
+<tr><td>2</td><td>长沙南站候补大数据</td><td>实时分析候补订单，精准加开列车，运力决策最快 2 小时</td><td>第6章候补驱动加开</td></tr>
+<tr><td>3</td><td>广州南站 500 条规则</td><td>检票口与车厢号精准对应，推荐最优走行路线</td><td>第5章站内规则引擎</td></tr>
+<tr><td>4</td><td>交通接驳智慧系统</td><td>推送最优进站线路、检票口、拥堵信息</td><td>第6章交通接驳引导</td></tr>
+<tr><td>5</td><td>95306 自动制票</td><td>全路首个试点，秒级制单</td><td>业务自动化启发</td></tr>
+<tr><td>6</td><td>客调命令智能管理</td><td>自动分解命令，替代人工操作近 85 万次</td><td>规则引擎与任务调度</td></tr>
+<tr><td>7</td><td>智能 CTC 与数字孪生</td><td>融合北斗、5G，行车/调机/客运/维修/应急五类业务智能化</td><td>系统集成思路</td></tr>
+<tr><td>8</td><td>TFDS 智能识别</td><td>AI 全检货车，覆盖 67 种车型、438 类故障</td><td>AI 视觉落地案例</td></tr>
+<tr><td>9</td><td>AI + 无人机巡检</td><td>山体滑坡、落石全天候监测预警</td><td>AI 在铁路安全的应用</td></tr>
+<tr><td>10</td><td>财务 AI 应用</td><td>6 款财务 AI 应用落地</td><td>AI 降本增效的旁证</td></tr>
+</tbody>
+</table>
+<p>学习建议：记住"<strong>候补加开（长沙南）、站内规则（广州南）、接驳引导（广州南）</strong>"这三个与项目直接相关的案例，面试聊"为什么选广铁"时用得上。</p>
+<hr />
+<h2>0.4 环境搭建</h2>
+<h3>0.4.1 JDK 17</h3>
+<ul>
+<li>项目要求：<strong>JDK 17（LTS）</strong>，Spring Boot 3.x 的最低要求也是 17；</li>
+<li>下载：Eclipse Temurin 17（或 Oracle JDK 17、Microsoft OpenJDK 17）；</li>
+<li>安装后配置环境变量 <code>JAVA_HOME</code> 指向 JDK 目录，并把 <code>%JAVA_HOME%\bin</code> 加入 <code>Path</code>；</li>
+<li>验证：</li>
+</ul>
+<pre><code class="language-bash">java -version
+# 期望看到 17.x 输出</code></pre>
+<blockquote>
+<p>说明：本机已安装 JDK 21，Spring Boot 3.x 在 21 上也能运行。项目 pom 中设置 <code>&lt;java.version&gt;17&lt;/java.version&gt;</code>，以确保代码兼容 17。生产/面试演示建议统一用 17。</p>
+</blockquote>
+<h3>0.4.2 Maven</h3>
+<p>Maven 是 Java 的依赖管理与构建工具，本章只需要 <strong>L2 会用</strong>。</p>
+<ul>
+<li>下载：Apache Maven 3.9.x 二进制 zip；</li>
+<li>解压到无中文、无空格的路径，如 <code>D:\tools\apache-maven-3.9.x</code>；</li>
+<li>配置 <code>MAVEN_HOME</code>，并把 <code>%MAVEN_HOME%\bin</code> 加入 <code>Path</code>；</li>
+<li>国内加速：在 <code>~/.m2/settings.xml</code> 配置阿里云镜像：</li>
+</ul>
+<pre><code class="language-xml">&lt;mirrors&gt;
+  &lt;mirror&gt;
+    &lt;id&gt;aliyun&lt;/id&gt;
+    &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;
+    &lt;name&gt;aliyun central&lt;/name&gt;
+    &lt;url&gt;https://maven.aliyun.com/repository/public&lt;/url&gt;
+  &lt;/mirror&gt;
+&lt;/mirrors&gt;</code></pre>
+<ul>
+<li>验证：</li>
+</ul>
+<pre><code class="language-bash">mvn -v</code></pre>
+<h3>0.4.3 IDEA / Git</h3>
+<ul>
+<li><strong>IDEA</strong>：社区版即可，<code>Open</code> 项目根目录，等待 Maven 导入依赖；</li>
+<li><strong>Git</strong>：安装后配置身份，提交才能关联到人：</li>
+</ul>
+<pre><code class="language-bash">git config --global user.name "你的名字"
+git config --global user.email "你的邮箱"</code></pre>
+<ul>
+<li>建议同时生成 SSH Key 并添加到 GitHub/Gitee，之后 <code>push</code> 免密。</li>
+</ul>
+<h3>0.4.4 Spring Initializr</h3>
+<p>官方脚手架 <code>start.spring.io</code> 的推荐选项：</p>
+<table>
+<thead>
+<tr><th>选项</th><th>值</th></tr>
+</thead>
+<tbody>
+<tr><td>Project</td><td>Maven</td></tr>
+<tr><td>Language</td><td>Java</td></tr>
+<tr><td>Spring Boot</td><td>3.5.x</td></tr>
+<tr><td>Group</td><td>com.railway</td></tr>
+<tr><td>Artifact</td><td>railway-12306</td></tr>
+<tr><td>Packaging</td><td>Jar</td></tr>
+<tr><td>Java</td><td>17</td></tr>
+<tr><td>Dependencies</td><td>Spring Web（后续章节再加 Lombok、MyBatis、Redis 等）</td></tr>
+</tbody>
+</table>
+<p>本项目 <code>pom.xml</code> 与骨架已按上述配置生成，等价于 Initializr 的产物。</p>
+<h3>0.4.5 Git 分支策略</h3>
+<p>轻量但够用：</p>
+<table>
+<thead>
+<tr><th>分支</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td><code>main</code></td><td>始终可运行、可演示的稳定版本</td></tr>
+<tr><td><code>dev</code></td><td>日常集成分支</td></tr>
+<tr><td><code>feature/chapter-XX-描述</code></td><td>每章功能分支，如 <code>feature/chapter-01-entity</code></td></tr>
+</tbody>
+</table>
+<p>提交规范：<code>feat(章节号): 功能描述</code>，例如：</p>
+<pre><code class="language-bash">git commit -m "feat(chapter-00): 搭建Spring Boot骨架与/hello接口"</code></pre>
+<p>原则：每完成一个小功能就提交一次，提交信息能让人看出"哪一章、做了什么"。</p>
+<h3>0.4.6 项目骨架结构（本章搭建完成后）</h3>
+<pre><code>railway-12306/
+├── docs/                          # 全部学习文档
+│   ├── chapters/                  # 每章学习材料
+│   ├── domain/                    # 铁路业务常识
+│   ├── mindmaps/                  # 思维导图
+│   ├── print/                     # 打印友好版 HTML
+│   └── project-origin.md          # 项目缘起
+├── src/main/java/com/railway/
+│   ├── RailwayApplication.java    # 启动类
+│   └── controller/
+│       └── HelloController.java   # /hello 接口
+├── src/main/resources/
+│   └── application.yml            # 应用配置
+├── pom.xml                        # Maven 配置
+└── README.md                      # 第8章完善</code></pre>
+<hr />
+<h2>0.5 Maven 学到 L2</h2>
+<h3>0.5.1 pom.xml 基本结构</h3>
+<pre><code class="language-xml">&lt;project&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;!-- 继承 Spring Boot 官方父工程，统一依赖版本 --&gt;
+  &lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;3.5.16&lt;/version&gt;
+    &lt;relativePath/&gt;
+  &lt;/parent&gt;
+
+  &lt;!-- 本工程坐标 --&gt;
+  &lt;groupId&gt;com.railway&lt;/groupId&gt;
+  &lt;artifactId&gt;railway-12306&lt;/artifactId&gt;
+  &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+
+  &lt;properties&gt;
+    &lt;java.version&gt;17&lt;/java.version&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+      &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</code></pre>
+<h3>0.5.2 依赖范围（scope）</h3>
+<table>
+<thead>
+<tr><th>scope</th><th>何时可用</th><th>典型例子</th></tr>
+</thead>
+<tbody>
+<tr><td>compile（默认）</td><td>编译、测试、运行</td><td>spring-web</td></tr>
+<tr><td>provided</td><td>编译、测试可用，打包不含</td><td>servlet-api（容器提供）</td></tr>
+<tr><td>runtime</td><td>编译不用，运行使用</td><td>MySQL 驱动</td></tr>
+<tr><td>test</td><td>仅测试</td><td>JUnit、Mockito</td></tr>
+</tbody>
+</table>
+<h3>0.5.3 父子工程</h3>
+<ul>
+<li><strong>继承</strong>：子模块继承父工程的依赖版本与插件配置，减少重复；</li>
+<li><strong>聚合</strong>：父工程 <code>packaging=pom</code>，通过 <code>&lt;modules&gt;</code> 一次构建所有子模块；</li>
+<li>本项目当前是单模块，等业务变大（如拆 <code>railway-ai</code>、<code>railway-common</code>）再引入多模块。</li>
+</ul>
+<h3>0.5.4 常用命令（务必亲手敲一遍）</h3>
+<pre><code class="language-bash">mvn clean                 # 清理 target
+mvn compile               # 编译
+mvn package               # 打包成 jar（默认跑测试）
+mvn package -DskipTests   # 打包但跳过测试
+mvn dependency:tree       # 打印依赖树，排查冲突
+mvn -Pprod package        # 激活 prod profile 打包
+mvn spring-boot:run       # 直接启动应用</code></pre>
+<h3>0.5.5 依赖冲突：排查与解决</h3>
+<ul>
+<li><strong>成因</strong>：A 依赖 X-1.0，B 依赖 X-2.0，Maven 只能选一个版本；</li>
+<li><strong>选取规则</strong>：最短路径优先；路径相同时先声明者优先；</li>
+<li><strong>排查</strong>：<code>mvn dependency:tree -Dincludes=groupId:artifactId</code>；</li>
+<li><strong>解决</strong>：<code>&lt;exclusions&gt;</code> 排除传递依赖，或在本工程显式声明想要的高版本。</li>
+</ul>
+<h3>0.5.6 profile 切换</h3>
+<pre><code class="language-xml">&lt;profiles&gt;
+  &lt;profile&gt;
+    &lt;id&gt;dev&lt;/id&gt;
+    &lt;activation&gt;&lt;activeByDefault&gt;true&lt;/activeByDefault&gt;&lt;/activation&gt;
+    &lt;properties&gt;&lt;env.name&gt;dev&lt;/env.name&gt;&lt;/properties&gt;
+  &lt;/profile&gt;
+  &lt;profile&gt;
+    &lt;id&gt;prod&lt;/id&gt;
+    &lt;properties&gt;&lt;env.name&gt;prod&lt;/env.name&gt;&lt;/properties&gt;
+  &lt;/profile&gt;
+&lt;/profiles&gt;</code></pre>
+<p>打包时用 <code>-Pprod</code> 激活不同环境配置，避免手动改配置。</p>
+<h3>0.5.7 L2 边界（明确不学）</h3>
+<ul>
+<li>不读 Maven 源码；</li>
+<li>不开发 Maven 插件；</li>
+<li>不搭建私服 Nexus；</li>
+<li>遇到问题能查文档、能照着报错解决即可。</li>
+</ul>
+<hr />
+<h2>0.6 本章产出与验收</h2>
+<p>产出清单：</p>
+<ul>
+<li>✅ <code>docs/mindmaps/chapter-00-start.mmd</code> 本章开头导图</li>
+<li>✅ <code>docs/chapters/chapter-00.md</code> 本章学习材料</li>
+<li>✅ <code>docs/domain/railway-domain-knowledge.md</code> 铁路业务常识文档</li>
+<li>✅ <code>docs/project-origin.md</code> 项目缘起（上一阶段已生成）</li>
+<li>✅ Spring Boot 骨架 + <code>/hello</code> 接口</li>
+<li>✅ <code>docs/print/chapter-00.html</code> 打印友好版</li>
+<li>✅ <code>docs/mindmaps/chapter-00-end.mmd</code> 本章复盘导图</li>
+</ul>
+<p>验收动作：</p>
+<ol>
+<li>启动应用后访问 <code>http://localhost:8080/hello</code>，看到返回字符串；</li>
+<li>合上文档，用自己的话解释：席位复用、票额分配、递远递减；</li>
+<li>说出广铁三个与项目相关的数智化案例：候补加开、站内规则、接驳引导。</li>
+</ol>
+<hr />
+<h2>0.7 自检三问（能答即过关）</h2>
+<p>以"席位复用"为例：</p>
+<ol>
+<li><strong>是什么</strong>：一个座位的运输能力按区段拆分，多乘客可复用同一座位；</li>
+<li><strong>为什么</strong>：提高座位利用率，让区间票也能卖出；</li>
+<li><strong>怎么排错</strong>：若余票计算错误，先查 <code>seat_inventory</code> 的区段起止站序是否重叠判断正确，再用 <code>EXPLAIN</code> 看查询是否走索引。</li>
+</ol>
+<hr />
+<h2>0.8 下一章预告</h2>
+<p><strong>第1章 Java核心基础与实体建模</strong>：用 OOP 和集合框架定义 <code>Station</code>、<code>Train</code>、<code>Seat</code>、<code>Ticket</code> 实体，写一个控制台版车次查询。业务知识将第一次变成代码。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-00.html</span>
+  <span>第0章 序章与环境搭建</span>
+</footer>
+</body>
+</html>

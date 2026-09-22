@@ -1,0 +1,59 @@
+mindmap
+  root((第7章 Linux部署与运维 🔄))
+    本章目标
+      容器化部署 📦
+      一条命令启动全项目
+      Nginx反向代理
+      Prometheus与Grafana监控
+      Linux排障实操 L3
+    核心知识点
+      Linux排障
+        日志定位空指针
+        grep awk sed
+        top与jstack定位CPU高 🔥
+        ss与netstat查端口
+        systemctl管服务
+        df与du查磁盘
+      Docker
+        Dockerfile多阶段构建
+        镜像分层与体积优化
+        .dockerignore
+       Docker Compose
+        services与依赖健康检查
+        volumes数据持久化
+        profiles按需启动
+        --scale水平扩容
+      Nginx
+        反向代理与转发头
+        resolver动态解析
+        负载均衡
+        gzip与超时
+      监控
+        /internal/metrics指标端点
+        Prometheus采集
+        Grafana看板
+        SkyWalking链路追踪
+    代码产出
+      Dockerfile 📦
+      docker-compose.yml 📦
+      deploy/nginx/nginx.conf 📦
+      prometheus.yml与Grafana 📦
+      /internal/metrics 📦
+    验收标准
+      compose配置可启动全项目 🎯
+      日志定位空指针 🎯
+      top加jstack定位CPU高 🎯
+      Nginx反代配置正确 🎯
+      监控看板可见 🎯
+    与前后章关联
+      承接第1到6章所有能力
+      Docker环境变量对接双模式开关
+      为第8章收尾与演示铺路
+    预计耗时
+      第11-12周
+      约4-6天
+    重点难点
+      compose依赖与健康检查 ⭐
+      Nginx动态解析与扩容 🔥
+      jstack线程栈解读 🧠
+      Docker未安装只做配置校验 🧠

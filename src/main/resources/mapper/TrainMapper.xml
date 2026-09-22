@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.railway.mapper.TrainMapper">
+
+    <select id="selectByTrainNo" resultType="Train">
+        SELECT id, train_no, train_type, direction, bureau,
+               departure_time, arrival_time, duration_minutes, mileage
+        FROM train
+        WHERE train_no = #{trainNo}
+    </select>
+
+    <select id="selectStationOrder" resultType="java.lang.Integer">
+        SELECT ts.station_order
+        FROM train_station ts
+                 JOIN station s ON s.id = ts.station_id
+        WHERE ts.train_id = #{trainId}
+          AND s.station_name = #{stationName}
+    </select>
+
+    <select id="selectAllStops" resultType="com.railway.dto.TrainStopRow">
+        SELECT t.train_no             AS train_no,
+               t.train_type           AS train_type,
+               s.station_name         AS station_name,
+               ts.station_order       AS station_order,
+               ts.arrival_time        AS arrival_time,
+               ts.departure_time      AS departure_time,
+               ts.day_offset          AS day_offset,
+               ts.mileage_from_start  AS mileage_from_start
+        FROM train_station ts
+                 JOIN train t ON t.id = ts.train_id
+                 JOIN station s ON s.id = ts.station_id
+        WHERE t.status = 1
+        ORDER BY t.id, ts.station_order
+    </select>
+
+    <select id="selectSegmentPrices" resultType="com.railway.dto.SegmentPriceRow">
+        SELECT t.train_no             AS train_no,
+               i.from_station_order   AS from_station_order,
+               i.price                AS price
+        FROM seat_inventory i
+                 JOIN train t ON t.id = i.train_id
+        WHERE i.travel_date = #{travelDate}
+          AND i.seat_type = #{seatType}
+        ORDER BY t.id, i.from_station_order
+    </select>
+
+    <select id="queryTrains" resultType="com.railway.dto.TrainVO">
+        SELECT t.id        AS train_id,
+               t.train_no  AS train_no,
+               t.train_type AS train_type,
+               t.direction AS direction,
+               t.bureau    AS bureau,
+               fs.station_name AS from_station,
+               ts.station_name AS to_station,
+               tfs.departure_time AS departure_time,
+               tts.arrival_time   AS arrival_time,
+               FLOOR((tts.day_offset * 1440 + TIME_TO_SEC(tts.arrival_time) / 60)
+                         - (tfs.day_offset * 1440 + TIME_TO_SEC(tfs.departure_time) / 60)) AS duration_minutes,
+               (tts.mileage_from_start - tfs.mileage_from_start) AS mileage,
+               (SELECT MIN(i.remaining_count)
+                FROM seat_inventory i
+                WHERE i.train_id = t.id
+                  AND i.travel_date = #{travelDate}
+                  AND i.seat_type = #{seatType}
+                  AND i.from_station_order &gt;= tfs.station_order
+                  AND i.to_station_order &lt;= tts.station_order) AS remaining_count,
+               (SELECT SUM(i.price)
+                FROM seat_inventory i
+                WHERE i.train_id = t.id
+                  AND i.travel_date = #{travelDate}
+                  AND i.seat_type = #{seatType}
+                  AND i.from_station_order &gt;= tfs.station_order
+                  AND i.to_station_order &lt;= tts.station_order) AS total_price
+        FROM train t
+                 JOIN train_station tfs ON tfs.train_id = t.id
+                 JOIN station fs ON fs.id = tfs.station_id
+                 JOIN train_station tts ON tts.train_id = t.id
+                 JOIN station ts ON ts.id = tts.station_id
+        WHERE fs.station_name = #{from}
+          AND ts.station_name = #{to}
+          AND tfs.station_order &lt; tts.station_order
+          AND t.status = 1
+        <if test="trainType != null and trainType != ''">
+            AND t.train_type = #{trainType}
+        </if>
+        ORDER BY tfs.departure_time
+    </select>
+</mapper>

@@ -1,0 +1,50 @@
+mindmap
+  root((第7章 Linux部署与运维 ✅))
+    已掌握
+      Linux排障场景
+        日志定位空指针
+        top加jstack定位CPU高 🔥
+        ss查端口与systemctl
+        grep awk sed统计
+      Docker
+        多阶段构建
+        健康检查
+        .dockerignore
+      Compose
+        healthcheck与depends_on
+        数据卷持久化
+        profiles按需启动
+        scale水平扩容
+      Nginx
+        resolver动态解析
+        反代与转发头
+        内网端点保护
+      监控
+        自定义Prometheus指标
+        Grafana看板
+        SkyWalking方案
+    已产出
+      Dockerfile 📦
+      docker-compose.yml 📦
+      nginx.conf 📦
+      prometheus与Grafana配置 📦
+      /internal/metrics 📦
+      6个新增测试 📦
+    验收结果
+      compose配置静态校验通过 🎯
+      日志与CPU排查手册可复现 🎯
+      Nginx关键指令校验通过 🎯
+      80个测试全部通过 🎯
+    踩坑记录
+      Docker未安装只做静态校验 🧠
+      depends_on需配healthcheck 🧠
+      Nginx固定upstream不支持扩容 🧠
+      无actuator自实现指标端点 🧠
+    待复习
+      jstack线程栈解读 🔥
+      compose profiles实操
+      生产Actuator替换步骤
+    下一章衔接
+      第8章 收尾与考核包装
+      部署文档与README
+      Swagger与测试体系

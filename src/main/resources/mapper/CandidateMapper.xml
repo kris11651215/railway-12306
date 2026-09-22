@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.railway.mapper.CandidateMapper">
+
+    <select id="aggregateWaitingByDate" resultType="com.railway.dto.CandidateBacklogVO">
+        SELECT fs.station_name     AS from_station,
+               ts.station_name     AS to_station,
+               c.seat_type         AS seat_type,
+               COUNT(*)            AS waiting_count,
+               MIN(c.candidate_time) AS first_candidate_time
+        FROM candidate c
+                 JOIN station fs ON fs.id = c.from_station_id
+                 JOIN station ts ON ts.id = c.to_station_id
+        WHERE c.status = 'WAITING'
+          AND c.travel_date = #{travelDate}
+        GROUP BY fs.station_name, ts.station_name, c.seat_type
+        ORDER BY waiting_count DESC
+    </select>
+</mapper>

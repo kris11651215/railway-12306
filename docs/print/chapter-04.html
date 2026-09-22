@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第4章 高并发与Redis实战 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第4章 高并发与Redis实战"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第4章 高并发与Redis实战</span>
+</header>
+<main class="chapter">
+<h1>第4章 高并发与Redis实战</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第5-6周，约5-7天<br />
+深度：Java并发编程 L4 + Redis L4 双专题；消息队列 L3<br />
+一句话：把第3章"数据库事务防超卖"升级为"Redis 分布式锁 + Lua 原子扣减 + MQ 异步削峰"，用 100 并发抢 10 张票验证零超卖。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-04-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-04-start.mmd -o docs/print/assets/chapter-04-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第4章 高并发与Redis 🔄</strong><ul><li>本章目标<ul><li>100并发抢10票零超卖</li><li>Redis分布式锁 ⭐</li><li>Lua原子扣减</li><li>MQ异步削峰</li><li>Java并发与Redis双专题 L4</li></ul></li><li>核心知识点<ul><li>Java并发 L4<ul><li>线程池七参数与拒绝策略</li><li>synchronized与锁升级</li><li>ReentrantLock与AQS</li><li>CAS与原子类</li><li>ConcurrentHashMap</li><li>i++为何不安全 🧠</li></ul></li><li>Redis L4<ul><li>五大结构与选型</li><li>过期策略与内存淘汰</li><li>穿透击穿雪崩 🔥</li><li>SETNX到Redisson</li><li>锁过期误删续期 🔥</li><li>Lua脚本原子性</li></ul></li><li>MQ削峰 L3<ul><li>异步下单</li><li>虚拟排队</li><li>Kafka与RocketMQ概念</li><li>消费幂等与补偿</li></ul></li></ul></li><li>代码产出<ul><li>DistributedLockManager 📦</li><li>StockStore与Lua扣减 📦</li><li>POST /api/order/grab 📦</li><li>GrabQueue内存MQ 📦</li><li>并发测试与压测脚本 📦</li><li>API文档抢票章节 📦</li></ul></li><li>验收标准<ul><li>恰好10订单不多不少 🎯</li><li>说清锁过期误删续期 🎯</li><li>解释MQ削峰与一致性 🎯</li><li>解释CAS与synchronized 🎯</li></ul></li><li>与前后章关联<ul><li>承 第3章事务FOR UPDATE防超卖</li><li>启 第5章路径规划与规则引擎</li><li>高并发能力支撑第6章AI候补分析</li></ul></li><li>预计耗时<ul><li>第5-6周</li><li>约5-7天</li></ul></li><li>重点难点<ul><li>锁续期看门狗 ⭐🧠</li><li>Redis与DB一致性 ⭐</li><li>压测结果量化 🔥</li><li>无Redis环境的双轨验证 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>Java 并发 L4</td><td>线程池、synchronized、ReentrantLock、CAS、AQS、ConcurrentHashMap、原子类</td><td>能解释 i++ 为什么不安全、CAS 与 synchronized 区别</td></tr>
+<tr><td>Redis L4</td><td>五大数据结构、过期策略、缓存三兄弟、SETNX、Redisson 可重入锁、Lua</td><td>能写分布式锁并说清锁过期、误删、续期</td></tr>
+<tr><td>分布式锁</td><td><code>DistributedLockManager</code> + Redis 实现 + 内存兜底实现</td><td>20 线程 10000 次自增无丢失</td></tr>
+<tr><td>抢票接口</td><td><code>POST /api/order/grab</code>（同步/异步双模式）</td><td>100 并发抢 10 张票恰好 10 个订单</td></tr>
+<tr><td>MQ 异步削峰</td><td><code>GrabQueue</code> 内存队列 + 4 消费者 + 虚拟排队位次</td><td>提交 QPS 与端到端 QPS 可量化</td></tr>
+<tr><td>压测脚本</td><td>JUnit5 并发测试 + <code>scripts/grab-stress.ps1</code></td><td>记录 QPS、成功数、订单数、剩余库存</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>开头导图：<code>docs/mindmaps/chapter-04-start.mmd</code></li>
+<li>结尾复盘：<code>docs/mindmaps/chapter-04-end.mmd</code></li>
+<li>压测脚本：<code>scripts/grab-stress.ps1</code></li>
+<li>上一章事务防超卖：<code>docs/chapters/chapter-03.md</code> 3.6.5 节</li>
+</ul>
+<hr />
+<h2>4.0 实验环境与双模式说明</h2>
+<p>本章真实环境检测结果：</p>
+<table>
+<thead>
+<tr><th>组件</th><th>本机状态</th><th>处理方式</th></tr>
+</thead>
+<tbody>
+<tr><td>MySQL 8.4</td><td>未运行</td><td>抢票接口默认走内存订单模式，DB 模式代码保留</td></tr>
+<tr><td>Redis</td><td>未安装</td><td>Redis 锁与 Lua 代码完整保留，默认走内存兜底实现</td></tr>
+<tr><td>Kafka/RocketMQ</td><td>未安装</td><td>用 <code>ArrayBlockingQueue</code> 内存队列模拟异步下单</td></tr>
+<tr><td>JMeter/wrk</td><td>未安装</td><td>用 JUnit5 多线程 + PowerShell HttpClient 并发脚本替代</td></tr>
+<tr><td>Docker</td><td>未安装</td><td>不依赖容器，文档给真实接入步骤，不执行下载安装</td></tr>
+</tbody>
+</table>
+<p>双模式由 <code>application.yml</code> 两个开关控制，代码路径完全一致，只有底层实现切换：</p>
+<pre><code class="language-yaml">railway:
+  redis:
+    mode: memory        # memory: 内存兜底(本机验证)  redis: 真实Redis
+  grab:
+    queue-capacity: 200      # 内存MQ队列容量(削峰水位)
+    worker-count: 4          # 异步消费线程数
+    lock-wait-millis: 3000   # 获取锁最长等待
+    lock-lease-millis: 5000  # 锁租约(TTL)
+    request-ttl-millis: 300000
+    order-store: memory      # memory: 内存订单(本机验证)  db: MySQL订单
+    simulate-order-cost-millis: 0</code></pre>
+<p>切换真实环境只需两步：启动 Redis 与 MySQL 后，把 <code>mode</code> 改为 <code>redis</code>、<code>order-store</code> 改为 <code>db</code>，再把库存用请求体预热一次。真实接入 Redis/MQ 的完整步骤见 4.3.5 与 4.4.5。</p>
+<p>抢票整体架构：</p>
+<pre><code class="language-text">POST /api/order/grab
+      │ 参数校验 + 生成 requestId
+      ▼
+GrabQueue 内存队列(ArrayBlockingQueue, 容量200)
+      │ offer 成功立即返回 QUEUED + 排队位次          ← 削峰：HTTP 不等库存
+      ▼
+grab-worker-0..3 四个消费者线程
+      │
+      ▼
+GrabProcessor.process
+  1. lockManager.getLock("railway:lock:grab:G1:2026-04-15:二等座")
+  2. lock.tryLock(3000ms, 5000ms)                      ← Redis SETNX+Lua / 内存兜底
+  3. stockStore.deduct(stockKey, 1)                    ← Redis Lua 原子扣减
+  4. orderWriter.create(request)                       ← DB事务 / 内存订单
+  5. 抛异常则 stockStore.compensate(stockKey, 1)       ← 失败回补
+  6. finally lock.unlock()                             ← 校验持有者后删除
+      │
+      ▼
+结果写入 GrabResultRepository，GET /api/order/grab/{requestId} 查询</code></pre>
+<p>内存模式下 HTTP 压测结论（先给结论，过程见 4.7）：</p>
+<table>
+<thead>
+<tr><th>模式</th><th>并发/库存</th><th>受理成功</th><th>服务端成功</th><th>失败</th><th>订单数</th><th>剩余</th><th>提交耗时</th><th>提交QPS</th></tr>
+</thead>
+<tbody>
+<tr><td>sync 同步</td><td>100/10</td><td>100</td><td>10</td><td>90</td><td>10</td><td>0</td><td>101ms</td><td>990.1</td></tr>
+<tr><td>async 异步</td><td>100/10</td><td>100</td><td>10</td><td>90</td><td>10</td><td>0</td><td>76ms</td><td>1315.8</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.1 Java 并发编程专题 L4</h2>
+<h3>4.1.1 线程池：七个参数决定吞吐与稳定性</h3>
+<p><strong>是什么</strong></p>
+<p><code>ThreadPoolExecutor</code> 的构造参数共七个：<code>corePoolSize</code>、<code>maximumPoolSize</code>、<code>keepAliveTime</code>、<code>unit</code>、<code>workQueue</code>、<code>threadFactory</code>、<code>handler</code>。执行流程：</p>
+<pre><code class="language-text">execute(task)
+  ├─ 运行线程数 &lt; coreSize           → 新建核心线程执行
+  ├─ 否则尝试入队 workQueue           → 入队成功等待
+  ├─ 队列满 &amp;&amp; 线程数 &lt; maxSize      → 新建非核心线程
+  └─ 队列满 &amp;&amp; 线程数 == maxSize     → 触发拒绝策略</code></pre>
+<p>四种拒绝策略：<code>AbortPolicy</code>（默认抛 <code>RejectedExecutionException</code>）、<code>CallerRunsPolicy</code>（提交线程自己执行，天然降速）、<code>DiscardPolicy</code>（静默丢弃）、<code>DiscardOldestPolicy</code>（丢最老任务）。</p>
+<p><strong>为什么</strong></p>
+<p>抢票接口的 100 个请求如果一人一线程，1000 QPS 时线程创建销毁与上下文切换会拖垮机器。线程池把线程复用、任务排队、过载拒绝三件事集中管理。本项目的消费者池 <code>grab-worker-0..3</code> 就是固定 4 线程的池化思想：HTTP 只负责入队，消费能力与线程数解耦。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>任务不执行、队列越堆越满</td><td>队列用了无界 <code>LinkedBlockingQueue</code>，永远不会触发扩容与拒绝</td><td>换 <code>ArrayBlockingQueue</code> 并设容量</td></tr>
+<tr><td>CPU 打满、GC 频繁</td><td>线程数/队列过大，任务积压</td><td>调小队列，加监控 <code>getQueue().size()</code></td></tr>
+<tr><td>线程数不涨过 coreSize</td><td>队列没满，流程走不到新建非核心线程</td><td>理解执行顺序：先入队后扩容</td></tr>
+<tr><td>抛 <code>RejectedExecutionException</code></td><td>过载</td><td>选择合适拒绝策略，前端返回 2003 排队已满</td></tr>
+<tr><td>线程泄漏</td><td>线程池未 <code>shutdown</code></td><td>应用关闭时统一关闭</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码（本项目生产级参数写法）</strong></p>
+<pre><code class="language-java">int coreSize = Runtime.getRuntime().availableProcessors();
+ThreadPoolExecutor executor = new ThreadPoolExecutor(
+        coreSize, coreSize * 2, 60L, TimeUnit.SECONDS,
+        new ArrayBlockingQueue&lt;&gt;(200),
+        new ThreadFactoryBuilder().setNameFormat("grab-worker-%d").build(),
+        new ThreadPoolExecutor.CallerRunsPolicy());</code></pre>
+<p>本项目的内存队列 <code>GrabQueue</code> 与线程池同源：<code>new ArrayBlockingQueue&lt;&gt;(capacity)</code> + 固定数量消费者循环 <code>poll(200ms)</code>，见 <code>src/main/java/com/railway/service/concurrency/GrabQueue.java</code>。</p>
+<h3>4.1.2 i++ 为什么不安全：一行代码拆成三步</h3>
+<p><strong>是什么</strong></p>
+<p><code>i++</code> 在字节码层是"读-改-写"三步：</p>
+<pre><code class="language-text">getfield   // 读 i 到操作数栈
+iconst_1
+iadd       // 加 1
+putfield   // 写回 i</code></pre>
+<p>两个线程可能都读到 10，各自算出 11，先后写回，最终只加了 1 次，这就是"丢失更新"。</p>
+<p><strong>为什么</strong></p>
+<p>栈帧是线程私有的，i 是堆上共享变量，三步之间没有原子性保证，也没有内存屏障保证可见性。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>压测计数总比预期小</td><td>计数用了 i++</td><td>换 <code>AtomicInteger</code> / <code>LongAdder</code></td></tr>
+<tr><td>加了 volatile 仍不准确</td><td>volatile 只保证可见性不保证原子性</td><td>原子类或加锁</td></tr>
+<tr><td>双重检查单例出问题</td><td>指令重排</td><td>实例字段加 <code>volatile</code></td></tr>
+</tbody>
+</table>
+<p><strong>示例代码（本项目的对照实验）</strong></p>
+<p><code>NonAtomicDeductTest</code> 用 <code>CyclicBarrier</code> 让 100 个线程先读完 <code>stock.get()</code> 再一起写回：</p>
+<pre><code class="language-java">int current = stock.get();      // 100个线程都读到 10
+barrier.await();                 // 对齐，保证"读"都发生在"写"之前
+if (current &gt;= 1) {
+    success.incrementAndGet();   // 100人都以为自己抢到
+    stock.set(current - 1);      // 最终库存只剩 9
+}</code></pre>
+<p>实测：<code>success=100</code>、<code>stock=9</code>——10 张票"卖出"100 张、库存只减 1，丢失 99 次更新。随后同一场景改用 <code>InMemoryStockStore.deduct</code>（CAS 循环）后：<code>success=10</code>、<code>stock=0</code>，完全正确。</p>
+<h3>4.1.3 synchronized：对象头里的 Monitor</h3>
+<p><strong>是什么</strong></p>
+<p><code>synchronized</code> 编译为 <code>monitorenter/monitorexit</code>，锁信息记录在对象头的 Mark Word：</p>
+<table>
+<thead>
+<tr><th>状态</th><th>Mark Word 内容</th><th>适用</th></tr>
+</thead>
+<tbody>
+<tr><td>无锁</td><td>hashCode/分代年龄</td><td>初始</td></tr>
+<tr><td>偏向锁</td><td>偏向线程 ID</td><td>单线程反复进入（JDK15 后默认禁用）</td></tr>
+<tr><td>轻量级锁</td><td>栈中锁记录指针</td><td>少量竞争，CAS 自旋</td></tr>
+<tr><td>重量级锁</td><td>Monitor 指针</td><td>激烈竞争，内核挂起</td></tr>
+</tbody>
+</table>
+<p>锁升级不可逆：偏向锁 → 轻量级锁 → 重量级锁。<code>synchronized</code> 可重入：同一线程再次进入，计数器 +1。</p>
+<p><strong>为什么</strong></p>
+<p>它是 JVM 内置锁，语法简单、自动释放（异常也会释放），是 <code>ConcurrentHashMap</code>（JDK8）与内存锁的基础。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>应用假死、CPU 不高</td><td>线程互相等锁形成死锁</td><td><code>jstack &lt;pid&gt;</code> 查 <code>Found one Java-level deadlock</code></td></tr>
+<tr><td>多把锁顺序不一致</td><td>环路等待</td><td>统一加锁顺序（第3章库存已按站序加锁）</td></tr>
+<tr><td>锁粒度太大</td><td>串行化严重</td><td>锁分段/缩小临界区</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码</strong></p>
+<pre><code class="language-java">private final Object lock = new Object();
+
+public void deduct() {
+    synchronized (lock) {
+        if (stock &gt; 0) {
+            stock--;
+        }
+    }
+}</code></pre>
+<h3>4.1.4 ReentrantLock 与 AQS：显式锁与队列同步器</h3>
+<p><strong>是什么</strong></p>
+<p><code>ReentrantLock</code> 底层是 AQS（AbstractQueuedSynchronizer）：一个 <code>volatile int state</code> + 一条 CLH 双向等待队列。</p>
+<pre><code class="language-text">lock()  → CAS 抢 state 0→1；失败则包装成 Node 入队，park 挂起
+unlock()→ state-1；为 0 时唤醒队首线程</code></pre>
+<p>公平锁按队列顺序唤醒；非公平锁允许插队（新线程直接 CAS，成功即抢到，吞吐更高）。<code>Condition</code> 提供 <code>await/signal</code> 条件队列。</p>
+<p><strong>为什么</strong></p>
+<p>相比 <code>synchronized</code>，它支持可中断获取（<code>lockInterruptibly</code>）、超时获取（<code>tryLock(timeout)</code>）、公平模式与多条件变量；分布式锁的本地兜底实现也需要"尝试+超时"语义。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>忘记 unlock 导致永久阻塞</td><td>未用 try/finally</td><td><code>tryLock</code> 后必须在 <code>finally</code> 释放</td></tr>
+<tr><td>锁被别的线程释放</td><td>锁对象被跨线程传递</td><td>记录持有线程，释放前校验</td></tr>
+<tr><td>公平锁吞吐骤降</td><td>排队唤醒开销</td><td>无特殊需求用非公平</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码（本项目锁接口）</strong></p>
+<pre><code class="language-java">public interface DistributedLock {
+    boolean tryLock(long waitMillis, long leaseMillis);
+    void unlock();
+    String getKey();
+}</code></pre>
+<p><code>GrabProcessor</code> 的标准使用姿势：</p>
+<pre><code class="language-java">DistributedLock lock = lockManager.getLock(key);
+boolean locked = false;
+try {
+    locked = lock.tryLock(3000, 5000);
+    if (!locked) {
+        return GrabResult.failed(requestId, submittedAt, 2002, "获取分布式锁超时，请重试");
+    }
+    // 扣库存 + 下单
+} finally {
+    if (locked) {
+        lock.unlock();
+    }
+}</code></pre>
+<h3>4.1.5 CAS 与原子类：无锁并发的基石</h3>
+<p><strong>是什么</strong></p>
+<p>CAS（Compare And Swap）是一条 CPU 原子指令：比较内存值是否等于期望值，相等则更新，否则失败重试。Java 通过 <code>Unsafe.compareAndSwapInt</code> 暴露，<code>AtomicInteger</code> 封装为 <code>compareAndSet</code>。</p>
+<p>原子类家族：</p>
+<table>
+<thead>
+<tr><th>类</th><th>特点</th><th>适用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>AtomicInteger/AtomicLong</code></td><td>CAS 自旋</td><td>低竞争计数</td></tr>
+<tr><td><code>LongAdder</code></td><td>分段累加再求和</td><td>高竞争计数（本项目统计计数器）</td></tr>
+<tr><td><code>AtomicReference</code></td><td>对象引用 CAS</td><td>状态机</td></tr>
+<tr><td><code>AtomicStampedReference</code></td><td>带版本号</td><td>解决 ABA</td></tr>
+<tr><td><code>AtomicIntegerArray</code></td><td>数组元素原子更新</td><td>分段库存</td></tr>
+</tbody>
+</table>
+<p><strong>为什么</strong></p>
+<p>无锁、无上下文切换，低竞争时性能优于锁。CAS 的三大问题：ABA（用版本号解决）、自旋开销（高竞争时 CPU 空转）、只能保证一个变量原子性（多变量用锁或 <code>AtomicReference</code> 打包）。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>CAS 一直失败、CPU 高</td><td>高竞争自旋</td><td>换 <code>LongAdder</code> 或加锁</td></tr>
+<tr><td>数值"改回去了"</td><td>ABA</td><td><code>AtomicStampedReference</code></td></tr>
+<tr><td>原子类字段被替换</td><td>字段非 final</td><td>保证原子类实例 final</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码（本项目库存扣减）</strong></p>
+<pre><code class="language-java">public StockDeductResult deduct(String key, int count) {
+    AtomicInteger stock = stocks.get(key);
+    if (stock == null) {
+        return StockDeductResult.NOT_INITIALIZED;
+    }
+    while (true) {
+        int current = stock.get();
+        if (current &lt; count) {
+            return StockDeductResult.NO_STOCK;
+        }
+        if (stock.compareAndSet(current, current - count)) {
+            return StockDeductResult.OK;
+        }
+    }
+}</code></pre>
+<h3>4.1.6 ConcurrentHashMap：从分段锁到 CAS + synchronized</h3>
+<p><strong>是什么</strong></p>
+<p>JDK7：<code>Segment</code> 分段锁，默认 16 段，锁一段不影响其他段。 JDK8：丢弃分段锁，改为"数组 + 链表 + 红黑树"，用 <code>CAS</code> 插入空桶、<code>synchronized</code> 锁单个桶头节点；链表长度 ≥ 8 且数组长度 ≥ 64 时转红黑树。</p>
+<p><strong>为什么</strong></p>
+<p>抢票结果仓库 <code>GrabResultRepository</code> 用 <code>ConcurrentHashMap</code> 存 requestId → 结果，100 并发读写不需要自己加锁；<code>get</code> 无锁、<code>put</code> 只锁桶。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>复合操作仍不安全</td><td><code>get</code> 后 <code>put</code> 不是原子</td><td>用 <code>compute/computeIfAbsent/merge</code></td></tr>
+<tr><td>遍历时数据不一致</td><td>弱一致性迭代器</td><td>业务上接受或换快照</td></tr>
+<tr><td>扩容期间卡顿</td><td>多线程协助扩容</td><td>预估容量初始化，减少扩容</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码</strong></p>
+<pre><code class="language-java">Map&lt;String, GrabResult&gt; results = new ConcurrentHashMap&lt;&gt;();
+results.computeIfAbsent(requestId, id -&gt; new GrabResult());</code></pre>
+<h3>4.1.7 AQS 深挖：state 与等待队列</h3>
+<p><strong>是什么</strong></p>
+<p>AQS 用模板方法把"同步状态"抽象成 <code>state</code>：</p>
+<ul>
+<li>独占模式：<code>tryAcquire/tryRelease</code>（ReentrantLock）</li>
+<li>共享模式：<code>tryAcquireShared/tryReleaseShared</code>（Semaphore、CountDownLatch）</li>
+<li>条件队列：<code>ConditionObject</code>，<code>await</code> 释放锁入条件队列，<code>signal</code> 转移到同步队列</li>
+</ul>
+<p><strong>为什么</strong></p>
+<p>线程池的 Worker、<code>ReentrantLock</code>、<code>CountDownLatch</code> 全部建立在 AQS 上，理解 state 与队列就理解了 JUC 的骨架。</p>
+<p><strong>怎么排错</strong></p>
+<p>自行实现 AQS 子类时忘记在 <code>tryAcquire</code> 里用 CAS 修改 state，会导致挂起线程无法被唤醒；排错时先看 state 值，再看队列节点状态。</p>
+<p><strong>本章实际用到的并发工具</strong></p>
+<table>
+<thead>
+<tr><th>工具</th><th>用途</th><th>位置</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ExecutorService</code></td><td>压测 100 并发线程池</td><td><code>GrabConcurrencyTest</code></td></tr>
+<tr><td><code>ArrayBlockingQueue</code></td><td>有界内存队列削峰</td><td><code>GrabQueue</code></td></tr>
+<tr><td><code>CountDownLatch</code></td><td>发令枪，让 100 线程同时起跑</td><td>全部并发测试</td></tr>
+<tr><td><code>CyclicBarrier</code></td><td>对齐"读后写"，稳定复现丢失更新</td><td><code>NonAtomicDeductTest</code></td></tr>
+<tr><td><code>AtomicInteger/Long</code></td><td>库存 CAS、统计计数</td><td><code>InMemoryStockStore</code>、<code>GrabResultRepository</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.2 Redis 实战专题 L4</h2>
+<h3>4.2.1 五大数据结构与选型</h3>
+<table>
+<thead>
+<tr><th>结构</th><th>特点</th><th>典型场景</th><th>本章用法</th></tr>
+</thead>
+<tbody>
+<tr><td>String</td><td>二进制安全、可计数</td><td>缓存、计数器、分布式锁</td><td><code>railway:stock:*</code> 库存、锁 Hash 的值</td></tr>
+<tr><td>Hash</td><td>字段级更新</td><td>对象缓存、购物车</td><td>锁结构：field=持有者，value=重入次数</td></tr>
+<tr><td>List</td><td>双向链表</td><td>消息队列、最新列表</td><td>仅作知识储备</td></tr>
+<tr><td>Set</td><td>去重、交并集</td><td>标签、共同关注</td><td>仅作知识储备</td></tr>
+<tr><td>ZSet</td><td>有序、分值</td><td>排行榜、延时队列</td><td>仅作知识储备（候补排序可用）</td></tr>
+</tbody>
+</table>
+<p>选型口诀：单值 String，对象 Hash，去重 Set，排序 ZSet，队列 List/Stream。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td><code>WRONGTYPE</code></td><td>同一 key 混用多种结构</td><td><code>TYPE key</code> 确认，规范 key 命名</td></tr>
+<tr><td>大 key 操作卡顿</td><td>String 存了上万字段的 JSON</td><td>拆 Hash、控制 value 大小</td></tr>
+<tr><td>热 key 打满单分片</td><td>单一车次库存集中</td><td>本地缓存、key 加盐分片（第7章）</td></tr>
+</tbody>
+</table>
+<h3>4.2.2 过期策略与内存淘汰</h3>
+<p><strong>是什么</strong></p>
+<p>Redis 过期删除是"惰性删除 + 定期删除"组合：访问 key 时检查过期（惰性），后台每 100ms 随机抽查部分 key（定期）。内存达到 <code>maxmemory</code> 后触发淘汰策略：</p>
+<table>
+<thead>
+<tr><th>策略</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>noeviction</code></td><td>不淘汰，写入报错</td></tr>
+<tr><td><code>volatile-lru / volatile-lfu / volatile-random / volatile-ttl</code></td><td>只在设了过期时间的 key 中淘汰</td></tr>
+<tr><td><code>allkeys-lru / allkeys-lfu / allkeys-random</code></td><td>全部 key 参与淘汰</td></tr>
+</tbody>
+</table>
+<p><strong>为什么</strong></p>
+<p>分布式锁必须有过期时间：客户端崩溃后锁能自动释放，否则死锁。库存缓存同样需要 TTL 或显式清理，防止脏数据长期驻留。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>内存上涨、key 不失效</td><td>没设 TTL 且策略是 noeviction</td><td>设置过期时间、调淘汰策略</td></tr>
+<tr><td>刚写入的缓存马上没了</td><td><code>volatile-*</code> 策略下 TTL 被优先淘汰</td><td>评估策略与容量</td></tr>
+<tr><td>锁永不过期</td><td>只 SETNX 没 EXPIRE</td><td>用 <code>SET key value NX PX ttl</code> 一步完成</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码</strong></p>
+<pre><code class="language-bash">SET railway:lock:grab:G1:2026-04-15:二等座 holder-1 NX PX 5000</code></pre>
+<blockquote>
+<p>说明：这条命令只演示 <code>SET NX PX</code> 的原子加锁。本项目实现的是<strong>可重入锁</strong>，锁 key 实际为 Hash 结构（field=持有者 <code>clientId:threadId</code>，value=重入次数），加锁/释放走 4.4.2 的 Lua；直接对同一个 key 先 <code>SET</code> 再跑 Lua 会报 <code>WRONGTYPE</code>，生产请统一走 <code>DistributedLock</code> 接口。</p>
+</blockquote>
+<h3>4.2.3 缓存穿透、击穿、雪崩：高频面试三兄弟</h3>
+<table>
+<thead>
+<tr><th>问题</th><th>定义</th><th>后果</th><th>方案</th></tr>
+</thead>
+<tbody>
+<tr><td>穿透</td><td>查不存在的数据，缓存与 DB 都没有</td><td>请求全部打到 DB</td><td>空值缓存（短 TTL）、布隆过滤器、参数校验</td></tr>
+<tr><td>击穿</td><td>某个热 key 突然过期</td><td>大量请求同时回源</td><td>互斥锁重建、逻辑过期、热点永不过期</td></tr>
+<tr><td>雪崩</td><td>大批 key 同时过期或 Redis 宕机</td><td>DB 瞬间被打挂</td><td>TTL 加随机、多级缓存、限流降级、集群</td></tr>
+</tbody>
+</table>
+<p>本项目 G1 次 2026-04-15 二等座就是"热 key"：库存 key 被 100 并发同时读写。我们的做法是 Redis + 分布式锁 + DB 兜底三层配合（见 4.2.7），即使缓存错误也有 DB 的 <code>remaining_count &gt;= 1</code> 最后防线。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>判断</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>DB QPS 突然飙升、缓存命中率骤降</td><td>疑似穿透/击穿</td><td>看 key 是否存在：不存在→穿透；单个热 key→击穿</td></tr>
+<tr><td>Redis 监控大量 key 同一秒过期</td><td>雪崩前兆</td><td>TTL 加随机抖动</td></tr>
+<tr><td>空值被缓存后数据又出现了</td><td>空值 TTL 太长</td><td>空值 TTL 设短并主动删除</td></tr>
+</tbody>
+</table>
+<p><strong>示例代码</strong></p>
+<pre><code class="language-java">String cache = redis.opsForValue().get(key);
+if (cache != null) {
+    return cache.isEmpty() ? null : Integer.parseInt(cache);   // 空串 = 已缓存的空值
+}
+Integer fromDb = loadFromDb(key);
+if (fromDb == null) {
+    redis.opsForValue().set(key, "", 60, TimeUnit.SECONDS);    // 空值缓存，短 TTL 防穿透
+    return null;
+}
+redis.opsForValue().set(key, String.valueOf(fromDb), 60, TimeUnit.SECONDS);
+return fromDb;</code></pre>
+<p>要点：空值缓存必须写"空串"而不是不写，读取时要先判空串再 <code>parseInt</code>，否则第一次穿透会永远打库、空串还会触发 <code>NumberFormatException</code>。</p>
+<h3>4.2.4 分布式锁演进：从 SETNX 到 Redisson</h3>
+<p>四代方案，面试按这个顺序讲：</p>
+<pre><code class="language-text">第一代: SETNX key 1                          → 宕机死锁
+第二代: SETNX + EXPIRE                        → 两条命令非原子
+第三代: SET key value NX PX 30000             → 原子加锁，但误删/续期未解决
+第四代: 唯一 value + Lua 校验删除 + 看门狗续期   → 即 Redisson 思路</code></pre>
+<p>锁过期、误删、续期三个高频问题的标准答案：</p>
+<table>
+<thead>
+<tr><th>问题</th><th>场景</th><th>解决</th></tr>
+</thead>
+<tbody>
+<tr><td>锁过期</td><td>业务执行超过 TTL，锁自动释放，别人拿到锁</td><td>看门狗自动续期；合理评估 TTL；业务幂等</td></tr>
+<tr><td>锁误删</td><td>A 的锁过期后被 B 拿到，A 执行完直接 DEL 删了 B 的锁</td><td>value 存唯一持有者标识，Lua 先校验再删除</td></tr>
+<tr><td>续期</td><td>长业务需要锁续命</td><td>后台定时任务每 TTL/3 续一次，直到释放</td></tr>
+</tbody>
+</table>
+<p>释放锁的 Lua（本项目 <code>RedisDistributedLockManager</code> 同款思路）：</p>
+<pre><code class="language-lua">if redis.call('hexists', KEYS[1], ARGV[2]) == 0 then
+    return -1
+end
+local holdCount = redis.call('hincrby', KEYS[1], ARGV[2], -1)
+if holdCount &gt; 0 then
+    redis.call('pexpire', KEYS[1], ARGV[1])
+    return holdCount
+end
+redis.call('del', KEYS[1])
+return 0</code></pre>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>报错 <code>attempt to compare...</code></td><td>锁 key 类型不对（被其他结构占用）</td><td><code>TYPE</code> 检查，规范 key</td></tr>
+<tr><td>业务偶发重复执行</td><td>锁提前过期</td><td>加续期或延长 TTL，业务侧幂等</td></tr>
+<tr><td>明明加了锁仍超卖</td><td>锁没覆盖全部扣减路径，或锁 key 粒度不一致</td><td>统一 lock key（车次+日期+席别）</td></tr>
+</tbody>
+</table>
+<h3>4.2.5 Redisson 可重入锁原理与本次实现对照</h3>
+<p>Redisson <code>RLock</code> 的加锁 Lua 做了三件事：</p>
+<pre><code class="language-lua">-- 1. 锁不存在：创建 Hash，field=客户端ID:线程ID，value=1，设置过期
+-- 2. 锁存在且 field 是当前线程：重入次数 +1，刷新过期
+-- 3. 其他情况：返回剩余 TTL，客户端订阅锁释放消息等待</code></pre>
+<p>解锁时重入次数 -1，减到 0 才 <code>del</code>。看门狗（watchdog）默认 30s TTL，每 10s 续期一次。</p>
+<p>本项目 <code>RedisDistributedLockManager</code> 与 Redisson 的对照：</p>
+<table>
+<thead>
+<tr><th>能力</th><th>Redisson</th><th>本项目实现</th></tr>
+</thead>
+<tbody>
+<tr><td>可重入</td><td>Hash field 计数</td><td>Hash field=clientId:threadId 计数</td></tr>
+<tr><td>防误删</td><td>校验 field 后删除</td><td>Lua 校验 <code>hexists</code> 后删除</td></tr>
+<tr><td>续期</td><td>watchdog 后台续期</td><td><code>ScheduledExecutorService</code> 每 TTL/3 续期</td></tr>
+<tr><td>等待唤醒</td><td>pub/sub 通知</td><td>50ms 轮询重试（学习版简化）</td></tr>
+<tr><td>内存兜底</td><td>无</td><td><code>InMemoryDistributedLockManager</code> 同接口</td></tr>
+</tbody>
+</table>
+<p>内存兜底实现的关键点与 Redis 版本一一对应：<code>owner=Thread</code> 对应 field，<code>holdCount</code> 对应 Hash value，<code>expireAt</code> 对应 PEXPIRE，<code>release</code> 校验 owner 对应 Lua 校验 field。</p>
+<h3>4.2.6 Lua 原子操作：为什么要 Lua</h3>
+<p><strong>是什么</strong></p>
+<p>Redis 单线程执行命令，Lua 脚本整体作为一个命令执行，期间不会插入其他命令。<code>EVAL script numkeys key... arg...</code> 执行，<code>EVALSHA</code> 按 SHA1 复用脚本。</p>
+<p><strong>为什么</strong></p>
+<p>"读库存 → 判断 → 扣减"三步如果分开执行，并发下会穿插其他请求导致超卖：</p>
+<pre><code class="language-text">A: GET stock = 1
+B: GET stock = 1
+A: 1&gt;=1 → DECR → 0
+B: 1&gt;=1 → DECR → -1     ← 超卖</code></pre>
+<p>用 Lua 打包后：</p>
+<pre><code class="language-lua">local stock = redis.call('get', KEYS[1])
+if stock == false then
+    return -1
+end
+if tonumber(stock) &lt; tonumber(ARGV[1]) then
+    return 0
+end
+redis.call('decrby', KEYS[1], ARGV[1])
+return 1</code></pre>
+<p>返回值约定：<code>-1</code> 未预热，<code>0</code> 库存不足，<code>1</code> 扣减成功。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td><code>NOSCRIPT</code></td><td>脚本未加载就 EVALSHA</td><td>客户端自动回退 EVAL（Spring 已处理）</td></tr>
+<tr><td>脚本执行慢拖垮 Redis</td><td>脚本里有大循环/大 key</td><td>脚本保持 O(1)，控制单次处理量</td></tr>
+<tr><td>参数类型不对</td><td>tonumber 失败返回 nil</td><td>入参显式转字符串数字</td></tr>
+</tbody>
+</table>
+<h3>4.2.7 Redis 与数据库一致性：本章的取舍</h3>
+<p>库存权威数据仍在 MySQL <code>seat_inventory</code>，Redis 只做"快速预检 + 削峰"：</p>
+<pre><code class="language-text">Redis扣减成功 → DB事务下单(FOR UPDATE + remaining_count&gt;=1) → 成功则结束
+                                        │ 失败
+                                        ▼
+                              Redis回补 compensate +1</code></pre>
+<table>
+<thead>
+<tr><th>风险</th><th>说明</th><th>兜底</th></tr>
+</thead>
+<tbody>
+<tr><td>Redis 扣了、DB 没扣</td><td>DB 下单失败</td><td>捕获异常后 <code>compensate</code> 回补</td></tr>
+<tr><td>DB 扣了、Redis 没扣</td><td>极难发生（顺序上 Redis 先）</td><td>定时对账重新预热</td></tr>
+<tr><td>进程崩溃</td><td>Redis 扣减后、DB 提交前宕机</td><td>缓存设 TTL；定时任务以 DB 为准重新预热；业务幂等</td></tr>
+<tr><td>缓存与 DB 短暂不一致</td><td>并发读写</td><td>接受最终一致，第6章候补分析定时校正</td></tr>
+</tbody>
+</table>
+<p>这也是面试标准答法：<strong>缓存不追求强一致，追求最终一致；超卖的最终防线永远在数据库 <code>remaining_count &gt;= 1</code></strong>。第3章的 DB 防线原样保留，Redis 只是把压力挡在前面。</p>
+<hr />
+<h2>4.3 消息队列与削峰 L3</h2>
+<h3>4.3.1 为什么需要 MQ：同步 vs 异步</h3>
+<p>同步下单：HTTP 线程全程等待锁、Redis、DB，1000 QPS 时需要上千工作线程，DB 被瞬时流量打穿。</p>
+<p>异步下单：HTTP 只把请求塞进队列就返回"已受理"，消费者按自己的节奏落库，流量高峰被队列"削"成平稳的消费曲线。</p>
+<pre><code class="language-text">同步: 用户 → [锁+库存+DB 200ms] → 响应
+异步: 用户 → [入队 1ms] → 响应(排队位次)
+              └→ 队列 → 4消费者 → 锁+库存+DB → 轮询结果</code></pre>
+<p>三个价值：<strong>异步</strong>（响应快）、<strong>削峰</strong>（保护 DB）、<strong>解耦</strong>（下单与库存、短信、通知各自订阅）。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>队列无限堆积</td><td>消费能力 &lt; 生产速度</td><td>扩容消费者、限流生产者、队列设上限快速失败</td></tr>
+<tr><td>消息丢失</td><td>队列内存态、进程崩溃</td><td>持久化、ACK 机制、本地消息表</td></tr>
+<tr><td>重复消费</td><td>重试/网络抖动</td><td>消费幂等（requestId/orderNo 唯一键）</td></tr>
+</tbody>
+</table>
+<h3>4.3.2 Kafka 与 RocketMQ 核心概念</h3>
+<table>
+<thead>
+<tr><th>概念</th><th>Kafka</th><th>RocketMQ</th></tr>
+</thead>
+<tbody>
+<tr><td>元数据</td><td>ZooKeeper/KRaft</td><td>NameServer</td></tr>
+<tr><td>存储单元</td><td>Topic-Partition</td><td>Topic-MessageQueue</td></tr>
+<tr><td>消费位点</td><td>Offset（客户端/组协调）</td><td>Offset（Broker 管理）</td></tr>
+<tr><td>顺序消息</td><td>分区内有序</td><td>队列内有序</td></tr>
+<tr><td>事务消息</td><td>支持（幂等+事务）</td><td>支持（半消息+回查）</td></tr>
+<tr><td>延迟消息</td><td>时间轮（5.x 支持）</td><td>内置 18 个延迟级别</td></tr>
+<tr><td>典型场景</td><td>日志、大数据管道</td><td>电商交易、订单</td></tr>
+</tbody>
+</table>
+<p>抢票场景推荐 RocketMQ：事务消息天然适合"扣库存-下单"一致性；Kafka 更适合第6章 AI 分析日志管道。</p>
+<p><strong>怎么排错</strong></p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>消费堆积</td><td>消费者组数量/线程不足</td><td>增加消费者实例（不超过分区数）</td></tr>
+<tr><td>重复消费</td><td>位点提交失败</td><td>幂等消费</td></tr>
+<tr><td>消息顺序乱</td><td>多分区并发消费</td><td>按订单号 hash 到同一分区</td></tr>
+</tbody>
+</table>
+<h3>4.3.3 虚拟排队与限流</h3>
+<p>虚拟排队 = 有界队列 + 排队位次。本项目做法：</p>
+<ol>
+<li>队列容量 <code>queue-capacity: 200</code>，满了直接返回业务码 2003"抢票队列已满"；</li>
+<li>入队成功返回 <code>requestId</code> 与近似 <code>queuePosition</code>（入队时 <code>size()+1</code>）；</li>
+<li>前端用 <code>GET /api/order/grab/{requestId}</code> 轮询结果，避免长连接。</li>
+</ol>
+<p>限流的补充手段：令牌桶（Guava RateLimiter）控制入队速率、Sentinel 熔断、Nginx 层 <code>limit_req</code>。第7章再补 Nginx 与监控。</p>
+<h3>4.3.4 异步下单的一致性：幂等、补偿、本地消息表</h3>
+<table>
+<thead>
+<tr><th>手段</th><th>说明</th><th>本项目落地</th></tr>
+</thead>
+<tbody>
+<tr><td>幂等</td><td>同一请求重复消费只生成一单</td><td>requestId 唯一；DB 模式可用 orderNo 唯一索引</td></tr>
+<tr><td>补偿</td><td>失败步骤反向操作</td><td>DB 下单失败回补 Redis 库存</td></tr>
+<tr><td>本地消息表</td><td>业务与消息同事务写本地表，再投递</td><td>第7章/补充专题 Seata 时实现</td></tr>
+<tr><td>事务消息</td><td>半消息 + 回查确认</td><td>RocketMQ 生产方案，文档给接入骨架</td></tr>
+<tr><td>对账</td><td>定时比对缓存与 DB</td><td>定时重新预热库存</td></tr>
+</tbody>
+</table>
+<p>生产级流程（RocketMQ）建议：先落"抢票请求表"（状态=待处理），再发消息；消费者写订单成功后更新请求状态；定时任务扫描超时未完成请求做补偿。本项目内存版保留了同样的状态机（QUEUED → SUCCESS/FAILED）。</p>
+<h3>4.3.5 真实接入 Kafka/RocketMQ 步骤（本机不执行）</h3>
+<p>以 RocketMQ 为例：</p>
+<ol>
+<li><code>pom.xml</code> 增加依赖：</li>
+</ol>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.apache.rocketmq&lt;/groupId&gt;
+    &lt;artifactId&gt;rocketmq-spring-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;2.3.1&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+<ol>
+<li><code>application.yml</code> 配置：</li>
+</ol>
+<pre><code class="language-yaml">rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: railway-grab-producer</code></pre>
+<ol>
+<li>发送方把 <code>GrabQueue.submit</code> 替换为 <code>rocketMQTemplate.convertAndSend("grab-topic", message)</code>；</li>
+<li>消费方用 <code>@RocketMQMessageListener(topic = "grab-topic", consumerGroup = "grab-consumer")</code> 替代 <code>GrabQueue</code> 的消费循环，处理逻辑复用 <code>GrabProcessor</code>；</li>
+<li>结果仓库换成 Redis Hash（<code>railway:grab:result:{requestId}</code>）或 DB 表，<code>GrabResultRepository</code> 接口不变。</li>
+</ol>
+<p>Kafka 同理：<code>spring-kafka</code> + <code>KafkaTemplate</code> + <code>@KafkaListener</code>，下单逻辑完全复用。</p>
+<hr />
+<h2>4.4 实战一：Redis 分布式锁</h2>
+<h3>4.4.1 代码结构</h3>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>service/concurrency/DistributedLock.java</code></td><td>锁接口 <code>tryLock(wait, lease) / unlock</code></td></tr>
+<tr><td><code>service/concurrency/DistributedLockManager.java</code></td><td>锁工厂 <code>getLock(key)</code></td></tr>
+<tr><td><code>service/concurrency/RedisDistributedLockManager.java</code></td><td>Spring StringRedisTemplate + 三段 Lua + 看门狗</td></tr>
+<tr><td><code>service/concurrency/InMemoryDistributedLockManager.java</code></td><td>内存兜底：owner + 重入计数 + 过期时间</td></tr>
+<tr><td><code>config/GrabConfig.java</code></td><td>按 <code>railway.redis.mode</code> 装配实现</td></tr>
+</tbody>
+</table>
+<h3>4.4.2 Redis 加锁 Lua（可重入）</h3>
+<pre><code class="language-lua">if redis.call('exists', KEYS[1]) == 0 then
+    redis.call('hincrby', KEYS[1], ARGV[2], 1)
+    redis.call('pexpire', KEYS[1], ARGV[1])
+    return 1
+end
+if redis.call('hexists', KEYS[1], ARGV[2]) == 1 then
+    redis.call('hincrby', KEYS[1], ARGV[2], 1)
+    redis.call('pexpire', KEYS[1], ARGV[1])
+    return 1
+end
+return 0</code></pre>
+<ul>
+<li>KEYS[1]：锁 key；ARGV[1]：TTL 毫秒；ARGV[2]：持有者 <code>clientId:threadId</code>；</li>
+<li>返回 1 抢到，0 被占用；同线程重入只加计数不重置持有者。</li>
+</ul>
+<h3>4.4.3 看门狗续期</h3>
+<pre><code class="language-java">renewTask = renewExecutor.scheduleWithFixedDelay(this::renew, leaseMillis / 3, leaseMillis / 3, TimeUnit.MILLISECONDS);</code></pre>
+<p>每 TTL/3 执行续期 Lua，校验 field 后 <code>pexpire</code>。释放时取消任务。</p>
+<h3>4.4.4 锁测试结果（JUnit5 真实运行）</h3>
+<table>
+<thead>
+<tr><th>测试</th><th>场景</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td><code>lockShouldSerializeIncrement</code></td><td>20 线程各 500 次加锁自增</td><td>恰好 10000，无丢失</td></tr>
+<tr><td><code>sameThreadShouldAcquireReentrantly</code></td><td>同线程重入两次再释放两次</td><td>通过，其他线程可再获取</td></tr>
+<tr><td><code>expiredLockShouldBePreempted</code></td><td>TTL 50ms 过期后被抢占</td><td>通过（模拟宕机自动释放）</td></tr>
+<tr><td><code>waitTimeoutShouldReturnFalseWhileHeld</code></td><td>锁被占用时等待 100ms</td><td>返回 false，未误抢</td></tr>
+</tbody>
+</table>
+<h3>4.4.5 真实 Redis 接入与验证</h3>
+<ol>
+<li>本机安装 Redis 后启动 <code>redis-server</code>（或用已有实例）；</li>
+<li><code>application.yml</code> 设置 <code>railway.redis.mode: redis</code>（Redis 连接参数已配好 <code>spring.data.redis</code>，默认 localhost:6379）；</li>
+<li>重启应用，<code>SET</code>/<code>HSET</code> 观察：</li>
+</ol>
+<pre><code class="language-bash">redis-cli -h localhost -p 6379
+&gt; TYPE railway:lock:grab:G1:2026-04-15:二等座     # hash
+&gt; HGETALL railway:lock:grab:G1:2026-04-15:二等座  # field=clientId:threadId
+&gt; TTL railway:lock:grab:G1:2026-04-15:二等座      # 续期后仍在</code></pre>
+<ol>
+<li>再次执行 <code>scripts/grab-stress.ps1</code> 验证真实 Redis 路径。切换到 Redis 后若 Redis 不可用，抢票会返回"获取分布式锁超时"，此时应回退 <code>memory</code> 模式。</li>
+</ol>
+<hr />
+<h2>4.5 实战二：库存扣减与抢票接口</h2>
+<h3>4.5.1 接口定义</h3>
+<table>
+<thead>
+<tr><th>方法</th><th>路径</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>POST</td><td><code>/api/order/grab?sync=false</code></td><td>异步抢票，立即返回 requestId 与排队位次</td></tr>
+<tr><td>POST</td><td><code>/api/order/grab?sync=true</code></td><td>同步抢票，直接返回 SUCCESS/FAILED</td></tr>
+<tr><td>GET</td><td><code>/api/order/grab/{requestId}</code></td><td>查询异步结果</td></tr>
+<tr><td>GET</td><td><code>/api/order/grab/stats</code></td><td>压测统计：submitted/success/failed/orders/QPS</td></tr>
+<tr><td>GET</td><td><code>/api/order/grab/stock</code></td><td>查询库存缓存</td></tr>
+<tr><td>POST</td><td><code>/api/order/grab/stock/warmup</code></td><td>预热库存（生产可从 DB 定时同步）</td></tr>
+<tr><td>POST</td><td><code>/api/order/grab/reset</code></td><td>重置内存模式数据（压测用）</td></tr>
+</tbody>
+</table>
+<h3>4.5.2 请求与响应示例</h3>
+<pre><code class="language-bash">curl -X POST "http://localhost:8080/api/order/grab" \
+     -H "Content-Type: application/json" \
+     -d '{"userId":9001,"trainNo":"G1","travelDate":"2026-04-15","fromStation":"北京南","toStation":"上海虹桥","seatType":"二等座","passengerName":"张三"}'</code></pre>
+<p>异步受理响应（实测）：</p>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": {
+    "requestId": "4b4490a561ff4b59bb0860f7a2c0393d",
+    "status": "QUEUED",
+    "mode": "async",
+    "queuePosition": 1,
+    "orderNo": null,
+    "price": null,
+    "message": "已进入抢票队列，排队位置约 1"
+  },
+  "timestamp": 1789451572301
+}</code></pre>
+<p>结果查询（实测）：</p>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": {
+    "requestId": "4b4490a561ff4b59bb0860f7a2c0393d",
+    "status": "SUCCESS",
+    "code": 0,
+    "message": "抢票成功",
+    "orderNo": "GRAB202609151352520300041",
+    "price": 0,
+    "queuePosition": 1,
+    "submittedAtMillis": 1789451572301,
+    "finishedAtMillis": 1789451572303,
+    "costMillis": 2
+  }
+}</code></pre>
+<p>同步模式与失败示例（实测）：</p>
+<table>
+<thead>
+<tr><th>请求</th><th>响应 status</th><th>message</th></tr>
+</thead>
+<tbody>
+<tr><td>sync 第 1 次（库存1）</td><td>SUCCESS</td><td>抢票成功</td></tr>
+<tr><td>sync 第 2 次（库存0）</td><td>FAILED</td><td>余票不足，抢票失败</td></tr>
+<tr><td>库存未预热</td><td>FAILED</td><td>库存尚未预热，请联系管理员</td></tr>
+<tr><td>DB 下单异常</td><td>FAILED</td><td>模拟下单失败（库存已回补）</td></tr>
+</tbody>
+</table>
+<h3>4.5.3 扣减顺序与三道防线</h3>
+<pre><code class="language-text">第1道 分布式锁        串行化同一车次+日期+席别的扣减
+第2道 Redis/Lua 扣减  库存不足直接返回，不触达 DB
+第3道 DB 事务          FOR UPDATE + remaining_count&gt;=1（第3章保留）</code></pre>
+<p>即使 Redis 库存被预热成错误值（如 100），DB 层仍会拒绝超卖；反之 Redis 说没票时也不会压到 DB。</p>
+<hr />
+<h2>4.6 实战三：内存 MQ 异步下单</h2>
+<p><code>GrabQueue</code> 用 30 行实现了最小可用的 MQ：</p>
+<pre><code class="language-java">public boolean submit(GrabMessage message) {
+    return queue.offer(message);          // 有界队列，满了返回 false
+}
+
+private void consumeLoop() {
+    while (running) {
+        GrabMessage message = queue.poll(200, TimeUnit.MILLISECONDS);
+        if (message == null) {
+            continue;
+        }
+        GrabResult result = processor.process(message);
+        completionHandler.accept(result);  // 写回结果仓库
+    }
+}</code></pre>
+<p>与真实 MQ 的映射关系：</p>
+<table>
+<thead>
+<tr><th>内存实现</th><th>Kafka/RocketMQ 对应</th></tr>
+</thead>
+<tbody>
+<tr><td><code>ArrayBlockingQueue</code></td><td>Topic/Partition 的 Broker 端队列</td></tr>
+<tr><td><code>submit</code></td><td>Producer <code>send</code></td></tr>
+<tr><td><code>consumeLoop</code></td><td>Consumer 拉取循环 / <code>@KafkaListener</code></td></tr>
+<tr><td><code>completionHandler</code></td><td>消费位点提交 + 业务落库</td></tr>
+<tr><td>队列满返回 2003</td><td>生产端限流/队列水位告警</td></tr>
+<tr><td><code>shutdown()</code></td><td>消费者优雅下线</td></tr>
+</tbody>
+</table>
+<p>验证结果：异步 100 请求，4 消费者，10 库存，恰好 10 成功、90 失败、10 订单、库存 0，队列最终清空（<code>queueSize=0</code>）。</p>
+<hr />
+<h2>4.7 压测与验收</h2>
+<h3>4.7.1 JUnit5 并发测试（12 个用例全部通过）</h3>
+<pre><code class="language-text">Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+- RailwayApplicationTests        1（上下文加载）
+- DistributedLockTest            4（互斥/重入/过期/超时）
+- GrabConcurrencyTest            5（同步/异步/未预热/回补/队满）
+- NonAtomicDeductTest            2（无锁丢失更新/CAS正确）</code></pre>
+<p>关键用例实测数字：</p>
+<table>
+<thead>
+<tr><th>用例</th><th>并发/库存</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>同步抢票</td><td>100/10</td><td>success=10，failed=90，orders=10，remaining=0</td></tr>
+<tr><td>异步抢票（4消费者）</td><td>100/10</td><td>success=10，failed=90，orders=10，remaining=0</td></tr>
+<tr><td>无锁 check-then-act</td><td>100/10</td><td>"success"=100，stock=9（丢失99次更新）</td></tr>
+<tr><td>CAS 原子扣减</td><td>100/10</td><td>success=10，stock=0</td></tr>
+<tr><td>DB 下单失败</td><td>1/10</td><td>status=FAILED，库存回补为 10，订单 0</td></tr>
+<tr><td>队列已满</td><td>容量1</td><td>业务码 2003，rejected=1</td></tr>
+</tbody>
+</table>
+<h3>4.7.2 PowerShell HTTP 压测（100 并发抢 10 张票）</h3>
+<p>运行命令：</p>
+<pre><code class="language-powershell">.\scripts\grab-stress.ps1 -Mode sync  -Concurrency 100 -Stock 10 -ResultFile target\grab-stress-sync.txt
+.\scripts\grab-stress.ps1 -Mode async -Concurrency 100 -Stock 10 -ResultFile target\grab-stress-async.txt</code></pre>
+<p>实测结果：</p>
+<table>
+<thead>
+<tr><th>指标</th><th>sync 同步</th><th>async 异步</th></tr>
+</thead>
+<tbody>
+<tr><td>请求受理成功</td><td>100</td><td>100</td></tr>
+<tr><td>提交耗时</td><td>101 ms</td><td>76 ms</td></tr>
+<tr><td>提交 QPS</td><td>990.1</td><td>1315.8</td></tr>
+<tr><td>端到端耗时</td><td>101 ms</td><td>82 ms</td></tr>
+<tr><td>端到端 QPS</td><td>990.1</td><td>1219.5</td></tr>
+<tr><td>平均受理耗时</td><td>1.01 ms</td><td>0.76 ms</td></tr>
+<tr><td>服务端 success</td><td>10</td><td>10</td></tr>
+<tr><td>服务端 failed</td><td>90</td><td>90</td></tr>
+<tr><td>订单数</td><td>10</td><td>10</td></tr>
+<tr><td>剩余库存</td><td>0</td><td>0</td></tr>
+</tbody>
+</table>
+<p>说明：本机未装 JMeter/wrk，以上为内存模拟模式（Redis 锁、库存、订单均走内存实现）的真实 HTTP 压测，客户端为 PowerShell HttpClient 100 并发。应用启动耗时约 4.0s，压测期间日志 0 条 ERROR。切换到真实 Redis/MySQL 后执行同一脚本即可对比。</p>
+<h3>4.7.3 验收标准逐条对照</h3>
+<table>
+<thead>
+<tr><th>验收标准</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>100 并发抢 10 张票，恰好生成 10 个订单，不多不少</td><td>✅ JUnit 同步/异步 + HTTP 压测三处验证均为 10</td></tr>
+<tr><td>能写 Redis 分布式锁，并说清锁过期、误删、续期问题</td><td>✅ 4.2.4/4.4；Redis 版与内存版代码均落地</td></tr>
+<tr><td>能解释 MQ 削峰原理，说明异步下单一致性如何处理</td><td>✅ 4.3；补偿+幂等+最终一致方案</td></tr>
+<tr><td>能解释 i++ 为什么不安全，CAS 和 synchronized 的区别</td><td>✅ 4.1.2/4.1.5，并用测试复现丢失更新</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.8 自检三问与面试高频</h2>
+<h3>自检三问</h3>
+<ol>
+<li><strong>是什么</strong>：分布式锁用 <code>SET NX PX</code> + Lua 校验持有者；库存扣减用 Lua 把"读-判断-扣"变成原子操作；MQ 用有界队列把瞬时流量削成平稳消费。</li>
+<li><strong>为什么</strong>：1000 QPS 下 DB 行锁与连接池会先成为瓶颈，必须把判定前移到 Redis；但缓存不能保证强一致，所以 DB 的 <code>remaining_count &gt;= 1</code> 永远是最后防线。</li>
+<li><strong>怎么排错</strong>：抢票失败先看 <code>GET /api/order/grab/{requestId}</code> 的 code（2001 余票、2002 下单、2003 队满、2004 请求不存在）；锁问题看锁 key 类型与持有者；压测问题看 stats 的 queueSize 与 rejected。</li>
+</ol>
+<h3>高频面试题速答</h3>
+<table>
+<thead>
+<tr><th>问题</th><th>答题要点</th></tr>
+</thead>
+<tbody>
+<tr><td>分布式锁误删怎么办</td><td>value 存唯一持有者，Lua 先校验 field 再删；见 4.2.4</td></tr>
+<tr><td>锁过期业务没执行完</td><td>看门狗每 TTL/3 续期；业务评估 TTL；最终靠 DB 兜底</td></tr>
+<tr><td>i++ 为什么线程不安全</td><td>读-改-写三步非原子；volatile 也不行；用原子类/锁</td></tr>
+<tr><td>CAS 和 synchronized 区别</td><td>CAS 无锁自旋乐观失败重试；synchronized 悲观挂起阻塞；低竞争用 CAS，高竞争用锁</td></tr>
+<tr><td>AQS 原理</td><td>volatile state + CLH 队列，独占/共享/条件模式，模板方法</td></tr>
+<tr><td>缓存穿透击穿雪崩</td><td>空值+布隆；互斥重建+逻辑过期；TTL随机+多级+熔断</td></tr>
+<tr><td>MQ 削峰原理</td><td>生产者入队即返回，消费者按能力消费，峰值被队列吸收</td></tr>
+<tr><td>异步下单一致性</td><td>本地消息表/事务消息+幂等+补偿+对账，最终一致</td></tr>
+<tr><td>1000 QPS 怎么扛</td><td>Redis 预检+Lua、MQ 削峰、无锁 CAS、连接池与线程池参数、DB 最终兜底</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.9 本章代码地图</h2>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>src/main/java/com/railway/service/concurrency/DistributedLock.java</code></td><td>锁接口</td></tr>
+<tr><td><code>.../DistributedLockManager.java</code></td><td>锁管理器接口</td></tr>
+<tr><td><code>.../RedisDistributedLockManager.java</code></td><td>Redis 可重入锁 + Lua + 看门狗</td></tr>
+<tr><td><code>.../InMemoryDistributedLockManager.java</code></td><td>内存兜底锁（模拟验证）</td></tr>
+<tr><td><code>.../StockStore.java</code> + <code>InMemoryStockStore.java</code> + <code>RedisStockStore.java</code></td><td>库存扣减抽象与两种实现</td></tr>
+<tr><td><code>.../GrabKeys.java</code></td><td>锁 key / 库存 key 统一生成</td></tr>
+<tr><td><code>.../GrabProperties.java</code></td><td><code>railway.grab.*</code> 参数绑定</td></tr>
+<tr><td><code>.../GrabMessage.java</code> / <code>GrabResult.java</code> / <code>GrabResultRepository.java</code></td><td>消息与结果状态机</td></tr>
+<tr><td><code>.../GrabOrderWriter.java</code> + <code>DbGrabOrderWriter.java</code> + <code>InMemoryGrabOrderWriter.java</code></td><td>下单写入抽象（DB/内存）</td></tr>
+<tr><td><code>.../GrabProcessor.java</code></td><td>锁→扣减→下单→补偿 核心流水线</td></tr>
+<tr><td><code>.../GrabQueue.java</code></td><td>内存 MQ + 消费者</td></tr>
+<tr><td><code>.../GrabService.java</code></td><td>抢票服务：提交、查询、统计、预热、清理</td></tr>
+<tr><td><code>src/main/java/com/railway/controller/GrabController.java</code></td><td><code>POST /api/order/grab</code>（sync/async 同一路径）等 6 个接口</td></tr>
+<tr><td><code>src/main/java/com/railway/service/OrderRequestValidator.java</code></td><td>下单/抢票共用参数校验</td></tr>
+<tr><td><code>src/main/java/com/railway/config/GrabConfig.java</code></td><td>双模式条件装配</td></tr>
+<tr><td><code>src/test/java/com/railway/service/concurrency/*</code></td><td>11 个并发测试（连同上下文加载共 12 个测试）</td></tr>
+<tr><td><code>scripts/grab-stress.ps1</code></td><td>PowerShell 100 并发压测脚本</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.10 踩坑记录</h2>
+<table>
+<thead>
+<tr><th>坑</th><th>现象</th><th>原因</th><th>修复</th></tr>
+</thead>
+<tbody>
+<tr><td>内存锁 map 移除竞态</td><td>日志大量"锁不属于当前线程"</td><td>释放后 <code>remove</code>，等待线程持有被移除的 entry</td><td>锁 entry 不再移除，仅清 owner</td></tr>
+<tr><td>压测 reset 无效</td><td>统计从 200 开始</td><td>脚本用了 GET，接口是 POST，405 被当成 JSON 解析</td><td>增加 POST 辅助函数并校验 code</td></tr>
+<tr><td>PowerShell 中文乱码/解析失败</td><td>脚本直接语法报错</td><td>PS5.1 需要 UTF-8 BOM</td><td>脚本保存为 UTF-8 with BOM</td></tr>
+<tr><td><code>GrabOrderWriter</code> 不能写成 lambda</td><td>编译报"不是函数式接口"</td><td>接口有 4 个抽象方法</td><td>测试中用匿名类实现</td></tr>
+<tr><td>无 MySQL 时启动失败风险</td><td>DataSource 初始化阻塞</td><td>Hikari 默认 fail-fast</td><td><code>initialization-fail-timeout: -1</code>，DB 不可用时应用仍可启动（抢票走内存模式）</td></tr>
+<tr><td>异步结果被 QUEUED 覆盖</td><td>理论上可能结果回退</td><td>先 markSubmitted 再入队，消费者完成晚于入队</td><td>已按"先登记再入队"顺序实现</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>4.11 下一章预告</h2>
+<p><strong>第5章 中转换乘路径规划与站内规则引擎</strong>：本章的高并发基础设施就位后，下一章进入算法专题：邻接表 + 优先队列 + Dijkstra/A* + 时间扩展图，实现"最快/最经济"换乘方案；再叠加广州南站 500 条规则简化版，用策略模式 + 责任链输出检票口与走行路线。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-04.html</span>
+  <span>第4章 高并发与Redis实战</span>
+</footer>
+</body>
+</html>

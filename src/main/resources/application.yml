@@ -1,0 +1,69 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: railway-12306
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/railway?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 3000
+      initialization-fail-timeout: -1
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: 0
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      lettuce:
+        shutdown-timeout: 100ms
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.railway.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
+railway:
+  redis:
+    mode: memory
+  grab:
+    queue-capacity: 200
+    worker-count: 4
+    lock-wait-millis: 3000
+    lock-lease-millis: 5000
+    request-ttl-millis: 300000
+    order-store: memory
+    simulate-order-cost-millis: 0
+  route:
+    mode: memory
+    algorithm: dijkstra
+    min-transfer-minutes: 10
+    max-wait-minutes: 240
+    max-transfers: 2
+    max-duration-minutes: 1440
+  ai:
+    mode: mock
+    provider: deepseek
+    base-url: https://api.deepseek.com/v1
+    api-key: ${DEEPSEEK_API_KEY:}
+    model: deepseek-chat
+    connect-timeout-millis: 3000
+    read-timeout-millis: 15000
+    max-retries: 2
+    data-mode: memory
+    backlog-threshold: 100
+    suggest-top-n: 5
+    scheduler-enabled: true
+    candidate-scan-initial-delay-millis: 60000
+    candidate-scan-interval-millis: 3600000
+    rag-top-k: 3
+    rag-min-score: 0.05

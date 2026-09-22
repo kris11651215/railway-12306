@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第2章 MySQL数据库设计与SQL实战 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第2章 MySQL数据库设计与SQL实战"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第2章 MySQL数据库设计与SQL实战</span>
+</header>
+<main class="chapter">
+<h1>第2章 MySQL数据库设计与SQL实战</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第3-4周前段，约4-5天<br />
+深度：L4（索引、事务、锁必须懂原理，能排错）<br />
+一句话：把第1章的实体落成七张表，用索引、事务与锁撑起"余票不失真、抢票不超卖"。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-02-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-02-start.mmd -o docs/print/assets/chapter-02-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第2章 MySQL数据库设计 🔄</strong><ul><li>本章目标<ul><li>索引原理与设计 L4</li><li>事务锁MVCC L4</li><li>七张核心表落地 📦</li><li>席位复用建模 📦</li></ul></li><li>核心知识点<ul><li>索引<ul><li>B+树结构</li><li>最左前缀</li><li>覆盖索引与回表</li><li>EXPLAIN解读</li></ul></li><li>事务<ul><li>ACID与隔离级别</li><li>MVCC原理</li><li>行锁与间隙锁</li><li>死锁排查</li></ul></li><li>慢查询<ul><li>慢日志定位</li><li>SQL重写</li><li>优化前后对比</li></ul></li></ul></li><li>代码产出<ul><li>init.sql七张表 📦</li><li>余票查询与候补聚合SQL 📦</li><li>数据库设计文档 📦</li><li>EXPLAIN实测记录 📦</li></ul></li><li>验收标准<ul><li>EXPLAIN识别全表扫描 🎯</li><li>解释可重复读幻读 🎯</li><li>说清区段起点终点站序 🎯</li><li>候补聚合按站按日统计 🎯</li></ul></li><li>与前后章关联<ul><li>承 第1章实体字段</li><li>启 第3章MyBatis与REST</li></ul></li><li>预计耗时<ul><li>第3-4周前段</li><li>约4-5天</li></ul></li><li>重点难点<ul><li>席位复用库存 ⭐</li><li>间隙锁与幻读 ⭐🧠</li><li>索引失效场景 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>表结构落地</td><td>七张表 + 建表 SQL</td><td><code>sql/init.sql</code> 可一键导入</td></tr>
+<tr><td>索引与优化</td><td>B+树/最左前缀/覆盖索引/回表</td><td>能用 EXPLAIN 看出全表扫描并加对索引</td></tr>
+<tr><td>事务与锁</td><td>ACID/隔离级别/MVCC/行锁/间隙锁/死锁</td><td>能解释可重复读下的幻读</td></tr>
+<tr><td>席位复用</td><td>原子区段库存模型</td><td>说清区段起点站序/终点站序的作用</td></tr>
+<tr><td>聚合查询</td><td>候补按站+日期聚合 SQL</td><td>SQL 结果能作为加开建议的输入</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>建表脚本与样例数据：<code>sql/init.sql</code></li>
+<li>数据库设计文档（含完整 EXPLAIN 实测）：<code>docs/architecture/01-database-design.md</code></li>
+</ul>
+<hr />
+<h2>2.0 实验环境</h2>
+<pre><code class="language-bash">mysql -u root -p --default-character-set=utf8mb4 &lt; sql/init.sql</code></pre>
+<p>导入后核对：</p>
+<pre><code class="language-sql">USE railway;
+SELECT COUNT(*) FROM station;         -- 13
+SELECT COUNT(*) FROM train;           -- 9
+SELECT COUNT(*) FROM train_station;   -- 33
+SELECT COUNT(*) FROM seat_inventory;  -- 947（含批量生成数据）
+SELECT COUNT(*) FROM candidate;       -- 3025（含批量生成数据）</code></pre>
+<p>本章所有 SQL 均可在导入后的库中直接执行，EXPLAIN 输出为 MySQL 8.4.0 实测。</p>
+<hr />
+<h2>2.1 建表与 CRUD</h2>
+<h3>2.1.1 建表三要素</h3>
+<p><strong>是什么</strong>：一张合格的表 = 正确的字段类型 + 约束（主键/唯一/外键/CHECK）+ 注释。</p>
+<p><strong>为什么</strong>：类型决定存储与计算精度（金额用 DECIMAL），约束把业务规则下沉到数据库（余票不能为负），注释让半年后的自己看得懂。</p>
+<p><strong>怎么排错</strong>：</p>
+<table>
+<thead>
+<tr><th>报错</th><th>原因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>ERROR 1064</td><td>SQL 语法错误，常因用了保留字（order/rank）</td><td>改表名或加反引号</td></tr>
+<tr><td>ERROR 1452</td><td>外键约束失败，父表无对应记录</td><td>先插父表，再插子表</td></tr>
+<tr><td>ERROR 1406</td><td>数据超长</td><td>扩大字段或校验输入</td></tr>
+<tr><td>ERROR 3819</td><td>CHECK 约束不满足</td><td>检查 remaining_count 等业务规则</td></tr>
+</tbody>
+</table>
+<p><strong>示例 SQL</strong>（库存表的完整建表片段）：</p>
+<pre><code class="language-sql">CREATE TABLE seat_inventory (
+    id                 BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    train_id           BIGINT UNSIGNED NOT NULL,
+    travel_date        DATE            NOT NULL,
+    seat_type          VARCHAR(20)     NOT NULL,
+    from_station_order INT             NOT NULL,
+    to_station_order   INT             NOT NULL,
+    total_count        INT             NOT NULL,
+    remaining_count    INT             NOT NULL,
+    price              DECIMAL(10, 2)  NOT NULL,
+    version            INT             NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_segment (train_id, travel_date, seat_type, from_station_order, to_station_order),
+    CONSTRAINT fk_inv_train FOREIGN KEY (train_id) REFERENCES train (id),
+    CONSTRAINT chk_segment CHECK (to_station_order &gt; from_station_order),
+    CONSTRAINT chk_remaining CHECK (remaining_count &gt;= 0)
+) ENGINE = InnoDB COMMENT = '座位库存表';</code></pre>
+<h3>2.1.2 CRUD 四板斧</h3>
+<pre><code class="language-sql">-- 增：新增一个车站
+INSERT INTO station (station_code, station_name, city, bureau, affiliated_depot, station_class, is_hub)
+VALUES ('TSP', '测试站', '测试市', '测试局集团', '测试动车段', '二等站', 0);
+
+-- 查：按路局查车站，按站名模糊查（前导确定才能用索引）
+SELECT station_name, bureau FROM station WHERE bureau = '广铁集团';
+SELECT station_name FROM station WHERE station_name LIKE '广州%';
+
+-- 改：修改站等级
+UPDATE station SET station_class = '一等站' WHERE station_name = '测试站';
+
+-- 删：删除测试站
+DELETE FROM station WHERE station_name = '测试站';</code></pre>
+<h3>2.1.3 JOIN 与聚合</h3>
+<pre><code class="language-sql">-- 查 G1 的全部经停（JOIN 经停表与车站表）
+SELECT ts.station_order, s.station_name, ts.arrival_time, ts.departure_time, ts.mileage_from_start
+FROM train_station ts
+         JOIN station s ON s.id = ts.station_id
+         JOIN train t ON t.id = ts.train_id
+WHERE t.train_no = 'G1'
+ORDER BY ts.station_order;
+
+-- 聚合：各席别库存总量
+SELECT seat_type, SUM(total_count) AS total, SUM(remaining_count) AS remaining
+FROM seat_inventory
+GROUP BY seat_type;</code></pre>
+<hr />
+<h2>2.2 B+ 树：索引为什么快</h2>
+<p><strong>是什么</strong>：InnoDB 索引底层是 B+ 树——多叉平衡树，非叶子节点只存键值和页指针，叶子节点存数据并按序用双向链表相连。一次查询从根走到叶，通常 3~4 次磁盘 IO 就能在千万级数据中定位记录。</p>
+<p><strong>为什么</strong>：</p>
+<ul>
+<li>与二叉搜索树相比，多叉树把树高压到 3~4 层，大幅减少磁盘 IO；</li>
+<li>叶子链表让范围查询（<code>BETWEEN</code>、<code>&gt;=</code>）天然高效，不用回到根节点重新走；</li>
+<li>与哈希索引相比，B+ 树支持排序、范围、最左前缀，通用性更强。</li>
+</ul>
+<p>一些量化直觉：</p>
+<table>
+<thead>
+<tr><th>概念</th><th>数值</th></tr>
+</thead>
+<tbody>
+<tr><td>InnoDB 页大小</td><td>16KB</td></tr>
+<tr><td>非叶子节点可容纳键值</td><td>约上千个</td></tr>
+<tr><td>三层 B+ 树可存数据</td><td>约 2000 万行</td></tr>
+<tr><td>点查磁盘 IO</td><td>约 3~4 次</td></tr>
+</tbody>
+</table>
+<p><strong>怎么排错</strong>：怀疑索引没生效时，先 <code>EXPLAIN</code> 看 <code>type</code> 和 <code>key</code>；<code>EXPLAIN ANALYZE</code>（MySQL 8.0.18+）可以看到实际执行时间与行数。</p>
+<p><strong>示例 SQL</strong>：</p>
+<pre><code class="language-sql">EXPLAIN SELECT * FROM candidate WHERE travel_date = '2026-04-15';</code></pre>
+<hr />
+<h2>2.3 聚簇索引、二级索引、回表与覆盖索引</h2>
+<p><strong>是什么</strong>：</p>
+<ul>
+<li><strong>聚簇索引</strong>：主键索引，叶子节点存放整行数据。InnoDB 表本身按主键组织；</li>
+<li><strong>二级索引</strong>：叶子节点存放"索引列 + 主键值"，要拿其他列必须用主键再查一次聚簇索引，这就是<strong>回表</strong>；</li>
+<li><strong>覆盖索引</strong>：查询需要的列全部包含在索引里，无需回表，EXPLAIN 的 Extra 会显示 <code>Using index</code>。</li>
+</ul>
+<p><strong>为什么</strong>：回表意味着每行多一次 B+ 树点查，行数一大代价成倍增长。能用覆盖索引的查询，尽量把 SELECT 列控制在索引范围内，或者调整联合索引的列顺序。</p>
+<p><strong>怎么排错</strong>：EXPLAIN 时重点看 Extra：出现 <code>Using index</code> 表示覆盖；只有 <code>Using index condition</code> 说明虽然下推了条件但还要回表。</p>
+<p><strong>示例 SQL</strong>（本项目实测，详见设计文档 3.4/3.5）：</p>
+<pre><code class="language-sql">-- 覆盖索引：四列条件都在 idx_agg(travel_date, from_station_id, to_station_id, status) 中
+EXPLAIN SELECT COUNT(*) FROM candidate
+WHERE travel_date = '2026-04-15' AND from_station_id = 8 AND to_station_id = 12 AND status = 'WAITING';
+-- Extra: Using where; Using index
+
+-- 回表：candidate_no 不在索引中，需要回表
+EXPLAIN SELECT candidate_no FROM candidate
+WHERE travel_date = '2026-04-15' AND from_station_id = 8 AND to_station_id = 12 AND status = 'WAITING';
+-- Extra: Using index condition（没有 Using index）</code></pre>
+<hr />
+<h2>2.4 最左前缀原则与联合索引设计</h2>
+<p><strong>是什么</strong>：联合索引 <code>(a, b, c)</code> 像电话簿先按 a 排、a 相同再按 b 排。查询想用索引，必须从最左列开始连续匹配；中间断了，后面的列只能退化为过滤。</p>
+<p><strong>为什么</strong>：B+ 树只有一种排序方式。跳过 a 直接查 b，就像跳过姓氏直接按名字找电话，索引树用不上。</p>
+<p><strong>怎么排错</strong>：</p>
+<table>
+<thead>
+<tr><th>查询条件</th><th>能否用 idx_agg(travel_date, from, to, status)</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>travel_date = ?</td><td>能</td><td>最左列</td></tr>
+<tr><td>travel_date = ? AND from = ?</td><td>能</td><td>连续前缀</td></tr>
+<tr><td>from = ? AND to = ?</td><td>不能</td><td>缺最左列</td></tr>
+<tr><td>travel_date = ? AND to = ?</td><td>部分</td><td>只能用 travel_date，to 需回索引过滤</td></tr>
+</tbody>
+</table>
+<p><strong>示例 SQL</strong>：</p>
+<pre><code class="language-sql">-- 能用：最左两列连续
+EXPLAIN SELECT COUNT(*) FROM candidate WHERE travel_date = '2026-04-15' AND from_station_id = 8;
+
+-- 不能用 idx_agg：缺少最左列（实测走了 FK 索引合并）
+EXPLAIN SELECT COUNT(*) FROM candidate WHERE from_station_id = 8 AND to_station_id = 12;</code></pre>
+<p><strong>联合索引列序口诀</strong>：等值在前、范围在后、排序分组放最后；区分度高的列尽量靠前（但最左列优先满足高频等值条件）。</p>
+<hr />
+<h2>2.5 EXPLAIN 完全解读</h2>
+<p><strong>是什么</strong>：<code>EXPLAIN</code> 输出优化器的执行计划，不改数据。核心列如下：</p>
+<table>
+<thead>
+<tr><th>列</th><th>含义</th><th>重点看什么</th></tr>
+</thead>
+<tbody>
+<tr><td>type</td><td>访问类型</td><td>ALL（全表）&lt; index &lt; range &lt; ref &lt; eq_ref &lt; const</td></tr>
+<tr><td>possible_keys</td><td>可能用到的索引</td><td>为 NULL 说明没有可用索引</td></tr>
+<tr><td>key</td><td>实际使用的索引</td><td>为 NULL 就是没用索引</td></tr>
+<tr><td>key_len</td><td>使用索引的字节数</td><td>判断联合索引用了几列</td></tr>
+<tr><td>rows</td><td>预估扫描行数</td><td>越小越好</td></tr>
+<tr><td>filtered</td><td>过滤后剩余比例</td><td>结合 rows 判断真实代价</td></tr>
+<tr><td>Extra</td><td>附加信息</td><td>Using index（覆盖）、Using filesort（额外排序）、Using temporary（临时表）都是优化信号</td></tr>
+</tbody>
+</table>
+<p><strong>为什么</strong>：MySQL 优化器基于成本选择计划，并不总是选你以为的索引，EXPLAIN 是唯一的"解释权"。</p>
+<p><strong>怎么排错</strong>：先看 type 是不是 ALL；再看 key 是否命中；再看 rows 是否明显偏大；最后看 Extra 有没有 filesort/temporary。复杂 SQL 用 <code>EXPLAIN FORMAT=JSON</code> 或 <code>EXPLAIN ANALYZE</code>。</p>
+<p><strong>示例 SQL</strong>（候补聚合，实测前后对比）：</p>
+<pre><code class="language-sql">EXPLAIN
+SELECT c.travel_date, fs.station_name, ts.station_name, c.seat_type, COUNT(*)
+FROM candidate c
+         JOIN station fs ON fs.id = c.from_station_id
+         JOIN station ts ON ts.id = c.to_station_id
+WHERE c.status = 'WAITING' AND c.travel_date = '2026-04-15'
+GROUP BY c.travel_date, fs.station_name, ts.station_name, c.seat_type;</code></pre>
+<p>实测：加索引前 <code>type=ALL, rows=3001, Extra: Using temporary; Using filesort</code>；加 <code>idx_agg</code> 后 <code>type=ref, key=idx_agg, rows=1018, Extra: Using index condition</code>。完整输出见设计文档第 3 节。</p>
+<hr />
+<h2>2.6 索引失效的常见场景</h2>
+<p><strong>是什么</strong>：明明有索引，EXPLAIN 却是 <code>type=ALL</code>、<code>key=NULL</code>。</p>
+<p><strong>为什么</strong>：索引是对列值的<strong>有序结构</strong>，一旦表达式破坏了"按列值可比"的前提，B+ 树就用不上。</p>
+<p><strong>怎么排错</strong>：对照下表逐条排查。</p>
+<table>
+<thead>
+<tr><th>场景</th><th>失效示例</th><th>修正写法</th></tr>
+</thead>
+<tbody>
+<tr><td>函数包列</td><td><code>WHERE DATE(candidate_time)='2026-04-15'</code></td><td><code>WHERE candidate_time &gt;= '2026-04-15' AND candidate_time &lt; '2026-04-16'</code></td></tr>
+<tr><td>运算包列</td><td><code>WHERE train_id + 1 = 8</code></td><td><code>WHERE train_id = 7</code></td></tr>
+<tr><td>前导模糊</td><td><code>WHERE station_name LIKE '%南'</code></td><td>尽量 <code>LIKE '广州%'</code>；全文需求上 ES</td></tr>
+<tr><td>隐式类型转换</td><td><code>WHERE station_code = 123</code>（列为字符串）</td><td><code>WHERE station_code = '123'</code></td></tr>
+<tr><td>OR 连接不同列</td><td><code>WHERE a=1 OR b=2</code></td><td>拆成 UNION 或建对应联合索引</td></tr>
+<tr><td>违反最左前缀</td><td><code>WHERE to_station_id = 12</code></td><td>带上 <code>travel_date</code> 等左侧列</td></tr>
+<tr><td>优化器放弃</td><td>小表或全表本来就便宜</td><td>看成本，不迷信索引</td></tr>
+</tbody>
+</table>
+<p><strong>示例 SQL</strong>（实测均 <code>type=ALL, key=NULL</code>）：</p>
+<pre><code class="language-sql">EXPLAIN SELECT * FROM candidate WHERE DATE(candidate_time) = '2026-04-15';
+EXPLAIN SELECT * FROM station WHERE station_name LIKE '%南';</code></pre>
+<hr />
+<h2>2.7 事务与 ACID</h2>
+<p><strong>是什么</strong>：事务是一组要么全成功、要么全失败的 SQL。ACID：</p>
+<table>
+<thead>
+<tr><th>特性</th><th>含义</th><th>InnoDB 实现</th></tr>
+</thead>
+<tbody>
+<tr><td>原子性 Atomicity</td><td>全做或全不做</td><td>undo log 回滚</td></tr>
+<tr><td>一致性 Consistency</td><td>约束始终满足（如余票不为负）</td><td>约束 + 应用逻辑</td></tr>
+<tr><td>隔离性 Isolation</td><td>并发事务互不干扰</td><td>锁 + MVCC</td></tr>
+<tr><td>持久性 Durability</td><td>提交后不丢</td><td>redo log（WAL）</td></tr>
+</tbody>
+</table>
+<p><strong>为什么</strong>：下单 = 扣库存 + 写订单，中途断电或异常必须回到原状，否则超卖或丢单。</p>
+<p><strong>怎么排错</strong>：<code>SELECT @@autocommit</code> 确认自动提交；忘记 <code>COMMIT</code> 会导致锁一直不释放；<code>SHOW ENGINE INNODB STATUS</code> 看事务状态。</p>
+<p><strong>示例 SQL</strong>：</p>
+<pre><code class="language-sql">START TRANSACTION;
+UPDATE seat_inventory
+SET remaining_count = remaining_count - 1, version = version + 1
+WHERE train_id = 1 AND travel_date = '2026-04-15' AND seat_type = '二等座'
+  AND from_station_order &gt;= 1 AND to_station_order &lt;= 4
+  AND remaining_count &gt;= 1;
+
+INSERT INTO ticket_order (order_no, user_id, train_id, travel_date, from_station_id, to_station_id,
+                          from_station_order, to_station_order, seat_type, passenger_name,
+                          passenger_id_card, price, expire_at)
+VALUES ('ORD20260415000099', 9001, 1, '2026-04-15', 1, 5, 1, 4, '二等座', '测试',
+        '110101********0000', 716.50, '2026-04-15 10:15:00');
+COMMIT;</code></pre>
+<hr />
+<h2>2.8 隔离级别与可重复读下的幻读</h2>
+<p><strong>是什么</strong>：SQL 标准四种隔离级别：</p>
+<table>
+<thead>
+<tr><th>级别</th><th>脏读</th><th>不可重复读</th><th>幻读</th></tr>
+</thead>
+<tbody>
+<tr><td>READ UNCOMMITTED</td><td>可能</td><td>可能</td><td>可能</td></tr>
+<tr><td>READ COMMITTED</td><td>不可能</td><td>可能</td><td>可能</td></tr>
+<tr><td>REPEATABLE READ（MySQL 默认）</td><td>不可能</td><td>不可能</td><td>快照读不会，当前读可能</td></tr>
+<tr><td>SERIALIZABLE</td><td>不可能</td><td>不可能</td><td>不可能</td></tr>
+</tbody>
+</table>
+<p><strong>为什么</strong>：RR 下普通 <code>SELECT</code> 用的是事务开始时的快照（MVCC），天然看不到别的事务后来插入的行；但 <code>UPDATE/DELETE/SELECT ... FOR UPDATE</code> 是<strong>当前读</strong>，会看到最新数据，于是"同一事务前后读到的行集不一致"——这就是幻读。</p>
+<p><strong>怎么排错/复现</strong>（两个会话）：</p>
+<pre><code class="language-sql">-- 会话 A
+START TRANSACTION;
+SELECT COUNT(*) FROM candidate WHERE travel_date = '2026-04-17' AND status = 'WAITING';
+-- 假设结果 0
+
+-- 会话 B（另一个连接）
+INSERT INTO candidate (candidate_no, user_id, train_id, travel_date, from_station_id, to_station_id,
+                       from_station_order, to_station_order, seat_type)
+VALUES ('CAND202604179999', 9999, 7, '2026-04-17', 8, 12, 1, 3, '二等座');
+COMMIT;
+
+-- 回到会话 A：当前读会看到 B 插入的行，更新成功
+UPDATE candidate SET seat_type = '二等座'
+WHERE travel_date = '2026-04-17' AND status = 'WAITING';
+-- Rows matched: 1（A 一开始"看不到"的行被更新了 → 幻读）
+
+-- 会话 A 再次快照读，仍然看不到（同一 ReadView）
+SELECT COUNT(*) FROM candidate WHERE travel_date = '2026-04-17' AND status = 'WAITING';
+ROLLBACK;</code></pre>
+<p><strong>示例 SQL</strong>（用间隙锁防幻读，见下节）：</p>
+<pre><code class="language-sql">SELECT * FROM candidate
+WHERE train_id = 7 AND travel_date = '2026-04-17' AND status = 'WAITING'
+FOR UPDATE;  -- 锁住不存在的区间，B 的 INSERT 会被阻塞</code></pre>
+<hr />
+<h2>2.9 MVCC：快照读的底层机制</h2>
+<p><strong>是什么</strong>：MVCC（多版本并发控制）通过行的多个历史版本实现"读不加锁"。三个关键组件：</p>
+<ol>
+<li>隐藏字段：<code>DB_TRX_ID</code>（最近修改事务）、<code>DB_ROLL_PTR</code>（指向 undo log 旧版本）；</li>
+<li>undo log：保存历史版本，形成版本链；</li>
+<li>ReadView：事务快照读时生成，记录当时活跃事务集合，判断哪个版本对当前事务可见。</li>
+</ol>
+<p><strong>为什么</strong>：读操作不阻塞写、写操作不阻塞读，是 12306 这类读多写少系统的吞吐关键。RR 下 ReadView 在事务内复用，RC 下每条语句重新生成，所以 RC 更容易"不可重复读"。</p>
+<p><strong>怎么排错</strong>：长事务会导致 undo 链膨胀、快照过旧；<code>SHOW ENGINE INNODB STATUS</code> 的 History list length 过高要警惕；线上避免大事务。</p>
+<p><strong>示例 SQL</strong>：</p>
+<pre><code class="language-sql">SELECT @@transaction_isolation;                       -- 查看隔离级别
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; -- 临时切换（课程演示）
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;</code></pre>
+<hr />
+<h2>2.10 行锁、间隙锁与 Next-Key Lock</h2>
+<p><strong>是什么</strong>：</p>
+<ul>
+<li><strong>记录锁（Record Lock）</strong>：锁住一条索引记录；</li>
+<li><strong>间隙锁（Gap Lock）</strong>：锁住两条记录之间的"空隙"，防止插入；</li>
+<li><strong>Next-Key Lock</strong>：记录锁 + 前面的间隙锁，InnoDB RR 下的默认加锁单位。</li>
+</ul>
+<p><strong>为什么</strong>：只锁记录挡不住"插入新记录"这种幻读，所以 RR 用间隙锁把区间也锁住。唯一索引等值命中时退化为记录锁（因为不存在要防的区间）；非唯一索引或范围条件会加 Next-Key Lock。</p>
+<p><strong>怎么排错/观察</strong>：</p>
+<pre><code class="language-sql">-- 会话 A：锁定一个不存在的区间（间隙锁）
+START TRANSACTION;
+SELECT * FROM candidate
+WHERE train_id = 7 AND travel_date = '2026-04-17'
+FOR UPDATE;
+
+-- 查看锁
+SELECT ENGINE_TRANSACTION_ID, OBJECT_NAME, INDEX_NAME, LOCK_TYPE, LOCK_MODE, LOCK_DATA
+FROM performance_schema.data_locks;
+
+-- 会话 B：这条 INSERT 会被阻塞，直到 A 提交/回滚
+INSERT INTO candidate (candidate_no, user_id, train_id, travel_date, from_station_id, to_station_id,
+                       from_station_order, to_station_order, seat_type)
+VALUES ('CAND202604178888', 8888, 7, '2026-04-17', 8, 12, 1, 3, '二等座');</code></pre>
+<p><strong>踩坑提示</strong>：</p>
+<ul>
+<li>间隙锁会阻塞插入，高并发下容易引发锁等待甚至死锁；</li>
+<li>若业务能接受 RC（比如用 binlog row 模式），间隙锁基本关闭，锁冲突更少；</li>
+<li>本项目扣库存场景锁的是<strong>明确的记录区间</strong>（<code>FOR UPDATE</code> + 具体条件），要控制锁范围，避免锁全表。</li>
+</ul>
+<p><strong>示例 SQL</strong>（锁等待时间）：</p>
+<pre><code class="language-sql">SHOW VARIABLES LIKE 'innodb_lock_wait_timeout';  -- 默认 50 秒</code></pre>
+<hr />
+<h2>2.11 死锁：发生、排查与预防</h2>
+<p><strong>是什么</strong>：两个事务互相持有对方需要的锁，形成环路。InnoDB 会自动检测，回滚代价小的一方，报错 <code>Deadlock found when trying to get lock</code>。</p>
+<p><strong>为什么</strong>：加锁顺序不一致（A 先锁 1 后锁 2，B 先锁 2 后锁 1）、大事务、间隙锁都是死锁温床。</p>
+<p><strong>怎么排错</strong>：</p>
+<pre><code class="language-sql">SHOW ENGINE INNODB STATUS;  -- 查看 LATEST DETECTED DEADLOCK 段落
+
+-- 8.0 更推荐：
+SELECT * FROM performance_schema.data_lock_waits;
+SET GLOBAL innodb_print_all_deadlocks = ON;  -- 把所有死锁打进 error log</code></pre>
+<p><strong>预防</strong>：</p>
+<ol>
+<li>统一加锁顺序（比如按 train_id、station_order 升序扣减区段）；</li>
+<li>事务尽量短小，不在事务里做远程调用；</li>
+<li>用唯一索引/主键点查，减少间隙锁；</li>
+<li>业务层对死锁做捕获与重试（重试前随机退避）；</li>
+<li>必要时降低隔离级别到 RC。</li>
+</ol>
+<p><strong>示例 SQL</strong>（死锁复现骨架）：</p>
+<pre><code class="language-sql">-- 会话 A                          -- 会话 B
+BEGIN;                             BEGIN;
+UPDATE seat_inventory SET remaining_count = remaining_count - 1 WHERE id = 1;
+                                   UPDATE seat_inventory SET remaining_count = remaining_count - 1 WHERE id = 2;
+UPDATE seat_inventory SET remaining_count = remaining_count - 1 WHERE id = 2;
+                                   UPDATE seat_inventory SET remaining_count = remaining_count - 1 WHERE id = 1;
+-- 互相等待 → 其中一方被回滚</code></pre>
+<p>本项目统一按 <code>from_station_order</code> 升序批量更新，即是为了避免这种环路。</p>
+<hr />
+<h2>2.12 慢查询：定位与优化闭环</h2>
+<p><strong>是什么</strong>：执行时间超过 <code>long_query_time</code> 的 SQL 会被记入慢查询日志。</p>
+<p><strong>为什么</strong>：EXPLAIN 是单条 SQL 的解剖刀，慢日志是全局的雷达，两者配合形成优化闭环。</p>
+<p><strong>怎么排错</strong>（开启与查看）：</p>
+<pre><code class="language-sql">SET GLOBAL slow_query_log = ON;
+SET GLOBAL long_query_time = 0.5;
+SET GLOBAL log_queries_not_using_indexes = ON;
+SHOW VARIABLES LIKE 'slow_query_log_file';</code></pre>
+<pre><code class="language-bash">mysqldumpslow -s t /var/lib/mysql/slow.log | head -20
+# 或用 pt-query-digest 做统计报告</code></pre>
+<p><strong>优化套路</strong>：</p>
+<ol>
+<li>先看 <code>rows</code> 和 <code>filtered</code>，确认扫了多少行；</li>
+<li>给 WHERE / JOIN / ORDER BY / GROUP BY 涉及的列建合适索引（联合索引注意列序）；</li>
+<li>避免 <code>SELECT *</code>，尽量覆盖索引；</li>
+<li>大分页改游标（<code>WHERE id &gt; ? LIMIT n</code>）；</li>
+<li>确认统计信息新鲜：<code>ANALYZE TABLE</code>。</li>
+</ol>
+<p><strong>示例 SQL</strong>（本项目候补聚合的优化闭环）：</p>
+<pre><code class="language-sql">-- 优化前：type=ALL, rows=3001, Using temporary; Using filesort
+-- 优化后：type=ref, key=idx_agg, rows=1018, Using index condition
+-- 复现实验：init.sql 建表时已创建 idx_agg，先删除再重建才能看到前后对比
+DROP INDEX idx_agg ON candidate;
+ALTER TABLE candidate ADD INDEX idx_agg (travel_date, from_station_id, to_station_id, status);
+ANALYZE TABLE candidate;</code></pre>
+<hr />
+<h2>2.13 本项目实战：三条核心 SQL</h2>
+<h3>2.13.1 余票查询（席位复用的读）</h3>
+<pre><code class="language-sql">SELECT MIN(remaining_count) AS remaining
+FROM seat_inventory
+WHERE train_id = 1 AND travel_date = '2026-04-15' AND seat_type = '二等座'
+  AND from_station_order &gt;= 1 AND to_station_order &lt;= 4;
+-- 实测返回 3：瓶颈区段是济南西→南京南</code></pre>
+<h3>2.13.2 候补聚合（加开建议的输入）</h3>
+<pre><code class="language-sql">SELECT c.travel_date,
+       fs.station_name AS from_station,
+       ts.station_name AS to_station,
+       COUNT(*)        AS candidate_count
+FROM candidate c
+         JOIN station fs ON fs.id = c.from_station_id
+         JOIN station ts ON ts.id = c.to_station_id
+WHERE c.status = 'WAITING' AND c.travel_date BETWEEN '2026-04-15' AND '2026-04-16'
+GROUP BY c.travel_date, fs.station_name, ts.station_name, c.seat_type
+HAVING COUNT(*) &gt;= 3
+ORDER BY candidate_count DESC;</code></pre>
+<h3>2.13.3 扣减库存（防超卖的写）</h3>
+<pre><code class="language-sql">START TRANSACTION;
+SELECT remaining_count FROM seat_inventory
+WHERE train_id = 1 AND travel_date = '2026-04-15' AND seat_type = '二等座'
+  AND from_station_order &gt;= 1 AND to_station_order &lt;= 4
+FOR UPDATE;
+
+UPDATE seat_inventory
+SET remaining_count = remaining_count - 1, version = version + 1
+WHERE train_id = 1 AND travel_date = '2026-04-15' AND seat_type = '二等座'
+  AND from_station_order &gt;= 1 AND to_station_order &lt;= 4
+  AND remaining_count &gt;= 1;
+COMMIT;</code></pre>
+<hr />
+<h2>2.14 自检三问（对齐验收标准）</h2>
+<ol>
+<li><strong>EXPLAIN 看出全表扫描</strong>：<code>type=ALL</code>、<code>key=NULL</code>、<code>rows</code> 接近表总行数 → 给 WHERE/GROUP BY 建联合索引 → 再次 EXPLAIN 看到 <code>type=ref/range</code>、<code>key=idx_agg</code>。</li>
+<li><strong>可重复读下幻读</strong>：快照读用 MVCC 不会幻读；当前读（<code>UPDATE</code>/<code>FOR UPDATE</code>）会读到新插入的行，表现为幻读；用 Next-Key Lock 锁区间可阻止插入。</li>
+<li><strong>席位复用</strong>：<code>seat_inventory</code> 每行是一个相邻区段（<code>from_station_order</code>、<code>to_station_order</code>）；查余票取区间内 <code>MIN</code>，扣库存对区间内所有区段批量扣减，因此一个座位能在不重叠区段被多段售卖。</li>
+</ol>
+<p>面试追问预演：</p>
+<ul>
+<li>"为什么不用一个库存字段？"→ 无法支持区段复用，会浪费运力。</li>
+<li>"为什么索引有时候不生效？"→ 成本模型 + 最左前缀 + 表达式破坏有序性，见 2.6/3.8。</li>
+<li>"怎么防超卖？"→ 第2章先有 <code>remaining_count &gt;= 1</code> 与事务；第4章再上 Redis 分布式锁与 MQ 削峰。</li>
+</ul>
+<hr />
+<h2>2.15 下一章预告</h2>
+<p><strong>第3章 MyBatis 与 Spring Boot 整合</strong>：把本章的 SQL 变成 <code>GET /api/trains?from=北京&amp;to=上海&amp;date=2026-04-15</code>，用 Mapper XML 写动态 SQL、ResultMap 映射实体，并用 Spring 事务保证"下单扣库存"的一致性。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-02.html</span>
+  <span>第2章 MySQL数据库设计与SQL实战</span>
+</footer>
+</body>
+</html>

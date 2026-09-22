@@ -1,0 +1,52 @@
+mindmap
+  root((第4章 高并发与Redis 🔄))
+    本章目标
+      100并发抢10票零超卖
+      Redis分布式锁 ⭐
+      Lua原子扣减
+      MQ异步削峰
+      Java并发与Redis双专题 L4
+    核心知识点
+      Java并发 L4
+        线程池七参数与拒绝策略
+        synchronized与锁升级
+        ReentrantLock与AQS
+        CAS与原子类
+        ConcurrentHashMap
+        i++为何不安全 🧠
+      Redis L4
+        五大结构与选型
+        过期策略与内存淘汰
+        穿透击穿雪崩 🔥
+        SETNX到Redisson
+        锁过期误删续期 🔥
+        Lua脚本原子性
+      MQ削峰 L3
+        异步下单
+        虚拟排队
+        Kafka与RocketMQ概念
+        消费幂等与补偿
+    代码产出
+      DistributedLockManager 📦
+      StockStore与Lua扣减 📦
+      POST /api/order/grab 📦
+      GrabQueue内存MQ 📦
+      并发测试与压测脚本 📦
+      API文档抢票章节 📦
+    验收标准
+      恰好10订单不多不少 🎯
+      说清锁过期误删续期 🎯
+      解释MQ削峰与一致性 🎯
+      解释CAS与synchronized 🎯
+    与前后章关联
+      承 第3章事务FOR UPDATE防超卖
+      启 第5章路径规划与规则引擎
+      高并发能力支撑第6章AI候补分析
+    预计耗时
+      第5-6周
+      约5-7天
+    重点难点
+      锁续期看门狗 ⭐🧠
+      Redis与DB一致性 ⭐
+      压测结果量化 🔥
+      无Redis环境的双轨验证 🧠

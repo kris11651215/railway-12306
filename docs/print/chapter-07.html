@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第7章 Linux部署与运维 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第7章 Linux部署与运维"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第7章 Linux部署与运维</span>
+</header>
+<main class="chapter">
+<h1>第7章 Linux部署与运维</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第11-12周，约4-6天<br />
+深度：Linux 排障 L3（场景化命令）；Docker/Compose/Nginx L2（会用、能改配置）；监控 L2-L3<br />
+一句话：把前面六章的"内存模式能跑"变成"一条 <code>docker compose up</code> 启动 MySQL + Redis + 应用 + Nginx"，再用日志、top、jstack、自定义指标端点把线上排障链路走通。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-07-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-07-start.mmd -o docs/print/assets/chapter-07-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第7章 Linux部署与运维 🔄</strong><ul><li>本章目标<ul><li>容器化部署 📦</li><li>一条命令启动全项目</li><li>Nginx反向代理</li><li>Prometheus与Grafana监控</li><li>Linux排障实操 L3</li></ul></li><li>核心知识点<ul><li>Linux排障<ul><li>日志定位空指针</li><li>grep awk sed</li><li>top与jstack定位CPU高 🔥</li><li>ss与netstat查端口</li><li>systemctl管服务</li><li>df与du查磁盘</li></ul></li><li>Docker<ul><li>Dockerfile多阶段构建</li><li>镜像分层与体积优化</li><li>.dockerignore</li></ul></li><li>Nginx<ul><li>反向代理与转发头</li><li>resolver动态解析</li><li>负载均衡</li><li>gzip与超时</li></ul></li><li>监控<ul><li>/internal/metrics指标端点</li><li>Prometheus采集</li><li>Grafana看板</li><li>SkyWalking链路追踪</li></ul></li></ul></li><li>代码产出<ul><li>Dockerfile 📦</li><li>docker-compose.yml 📦</li><li>deploy/nginx/nginx.conf 📦</li><li>prometheus.yml与Grafana 📦</li><li>/internal/metrics 📦</li></ul></li><li>验收标准<ul><li>compose配置可启动全项目 🎯</li><li>日志定位空指针 🎯</li><li>top加jstack定位CPU高 🎯</li><li>Nginx反代配置正确 🎯</li><li>监控看板可见 🎯</li></ul></li><li>与前后章关联<ul><li>承接第1到6章所有能力</li><li>Docker环境变量对接双模式开关</li><li>为第8章收尾与演示铺路</li></ul></li><li>预计耗时<ul><li>第11-12周</li><li>约4-6天</li></ul></li><li>重点难点<ul><li>compose依赖与健康检查 ⭐</li><li>Nginx动态解析与扩容 🔥</li><li>jstack线程栈解读 🧠</li><li>Docker未安装只做配置校验 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>Linux 排障 L3</td><td>日志定位空指针、top+jstack 定位 CPU 高、ss 查端口、systemctl 管服务</td><td>能按场景说出命令链路与输出解读</td></tr>
+<tr><td>Docker</td><td><code>Dockerfile</code> 多阶段构建 + <code>.dockerignore</code></td><td>镜像可构建（本机无 Docker，配置静态校验）</td></tr>
+<tr><td>Compose</td><td><code>docker-compose.yml</code> 编排 MySQL/Redis/应用/Nginx + 三个可选 profile</td><td><code>docker compose config</code> 通过（无 Docker 时静态校验）</td></tr>
+<tr><td>Nginx L2</td><td><code>deploy/nginx/nginx.conf</code> 反向代理 + 动态解析 + 负载均衡</td><td><code>nginx -t</code> 通过，代理到应用</td></tr>
+<tr><td>监控</td><td><code>/internal/metrics</code> + Prometheus + Grafana + SkyWalking 方案</td><td>指标可抓取，看板可导入</td></tr>
+<tr><td>文档</td><td>每步可复现的部署步骤</td><td>按文档顺序可完整复现</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>开头导图：<code>docs/mindmaps/chapter-07-start.mmd</code></li>
+<li>复盘导图：<code>docs/mindmaps/chapter-07-end.mmd</code></li>
+<li>应用与双模式开关：<code>src/main/resources/application.yml</code>（第4-6章）</li>
+<li>数据库初始化：<code>sql/init.sql</code>（第2章）</li>
+</ul>
+<hr />
+<h2>7.0 环境与验证边界（如实说明）</h2>
+<table>
+<thead>
+<tr><th>项</th><th>本机状态</th><th>处理方式</th></tr>
+</thead>
+<tbody>
+<tr><td>Docker / docker compose</td><td><strong>未安装</strong></td><td>不下载不安装；只产出 Dockerfile/compose/Nginx/监控配置，用 JUnit5 做配置静态守护测试</td></tr>
+<tr><td>Linux 环境</td><td>本机为 Windows</td><td>Linux 命令为<strong>目标环境操作手册</strong>，文中输出均标注"示例输出"</td></tr>
+<tr><td>MySQL / Redis</td><td>未运行</td><td>compose 中通过 healthcheck 与 depends_on 编排，未实机启动</td></tr>
+<tr><td>Prometheus / Grafana / SkyWalking</td><td>未安装</td><td>只产出配置与接入步骤，未实机拉起</td></tr>
+<tr><td>8080 服务</td><td>未运行</td><td>未做 HTTP 验证</td></tr>
+</tbody>
+</table>
+<p><strong>验证方式</strong>：<code>DeploymentConfigTest</code> 对 Dockerfile、compose、Nginx、Prometheus、Grafana 配置做存在性与关键指令静态校验；<code>MetricsControllerTest</code> 对指标端点做离线验证。Docker 编排的"实机启动"在具备 Docker 的机器上按 7.6 节步骤复现。</p>
+<hr />
+<h2>7.1 Linux 排查实战（场景驱动）</h2>
+<blockquote>
+<p>命令均为 Linux 目标环境执行；以下输出为<strong>示例输出</strong>，用于讲解"看到什么、说明什么、下一步做什么"。</p>
+</blockquote>
+<h3>7.1.1 场景一：接口返回 500，用日志定位空指针</h3>
+<p><strong>第 1 步：确认异常出口</strong>。本项目 <code>GlobalExceptionHandler</code> 对未预期异常统一打印堆栈：</p>
+<pre><code class="language-java">log.error("系统异常", e);</code></pre>
+<p><strong>第 2 步：按关键字找堆栈</strong>：</p>
+<pre><code class="language-bash"># 最近 200 行里找异常
+tail -n 200 logs/railway-12306.log
+
+# 全量找 NullPointerException 并显示行号与后 30 行
+grep -n "NullPointerException" logs/railway-12306.log
+
+# 直接看某次请求的完整调用链（按时间锚点）
+grep -n "2026-09-15 20:31" logs/railway-12306.log</code></pre>
+<p>示例输出：</p>
+<pre><code class="language-text">20:31:05.412 ERROR 1 --- [http-nio-8080-exec-3] c.r.exception.GlobalExceptionHandler : 系统异常
+java.lang.NullPointerException: Cannot invoke "com.railway.entity.Station.getId()" because "station" is null
+    at com.railway.service.OrderService.createOrder(OrderService.java:62)
+    at com.railway.controller.OrderController.createOrder(OrderController.java:34)</code></pre>
+<p><strong>第 3 步：解读堆栈</strong>。关键看三点：</p>
+<ol>
+<li>异常类型：<code>NullPointerException</code>，哪个引用为 null（<code>station</code>）；</li>
+<li><strong>第一个业务包帧</strong>：<code>com.railway.service.OrderService.createOrder</code>，这就是要看的代码位置；</li>
+<li>行号：<code>OrderService.java:62</code>，直接定位。</li>
+</ol>
+<p><strong>第 4 步：修复与验证</strong>。该项目已对"站点不存在"做了业务校验（第3章），如果仍出现 NPE，说明新加的分支漏了校验；修复后补充单测，而不是只改日志。</p>
+<p><strong>日志检索常用组合</strong>：</p>
+<pre><code class="language-bash">grep -c "ERROR" logs/railway-12306.log                 # 错误条数
+grep "ERROR" logs/railway-12306.log | tail -n 20       # 最近错误
+grep -B5 -A30 "NullPointerException" logs/railway-12306.log   # 堆栈上下文
+awk '/ERROR/ {print $1, $2, $NF}' logs/railway-12306.log | tail  # 只留时间与关键信息</code></pre>
+<p><strong>日志切割检查</strong>（防止磁盘被日志写满）：</p>
+<pre><code class="language-bash">ls -lh logs/
+du -sh logs/</code></pre>
+<h3>7.1.2 场景二：CPU 飙高，top + jstack 定位代码行</h3>
+<p><strong>第 1 步：top 找进程</strong>：</p>
+<pre><code class="language-bash">top -c</code></pre>
+<p>示例输出：</p>
+<pre><code class="language-text">  PID USER   PR  NI  VIRT   RES  %CPU %MEM  TIME+ COMMAND
+ 3210 root   20   0 4.2g   1.1g 398.7 13.8  12:31.44 java -jar app.jar</code></pre>
+<p>说明：进程 3210 的 CPU 接近 400%（多核累加），需要进一步定位线程。</p>
+<p><strong>第 2 步：进程内按线程排序</strong>：</p>
+<pre><code class="language-bash">top -Hp 3210</code></pre>
+<p>示例输出（某个线程占满一核）：</p>
+<pre><code class="language-text">  PID USER  PR  NI  VIRT  RES %CPU %MEM TIME+ COMMAND
+ 3245 root  20   0 4.2g  1.1g 99.9 13.8 5:02.11 java</code></pre>
+<p><strong>第 3 步：线程号转十六进制</strong>（jstack 输出里的 nid 是十六进制）：</p>
+<pre><code class="language-bash">printf "%x\n" 3245        # 输出 cad，例如 0xcad</code></pre>
+<p><strong>第 4 步：jstack 导出线程栈并定位</strong>：</p>
+<pre><code class="language-bash">jstack 3210 &gt; /tmp/jstack-3210.txt
+grep -n "nid=0xcad" -A 30 /tmp/jstack-3210.txt</code></pre>
+<p>示例输出：</p>
+<pre><code class="language-text">"http-nio-8080-exec-7" #41 daemon prio=5 os_prio=0 cpu=301245.12ms elapsed=310.55s tid=0x00007f... nid=0xcad runnable
+    at com.railway.service.concurrency.GrabProcessor.deduct(GrabProcessor.java:88)
+    at com.railway.service.concurrency.GrabProcessor.consume(GrabProcessor.java:54)
+    ...</code></pre>
+<p><strong>第 5 步：结合代码判断</strong>。常见 CPU 高的原因：</p>
+<table>
+<thead>
+<tr><th>线程栈特征</th><th>常见原因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>业务循环里跑满 CPU</td><td>死循环/无界重试</td><td>加退避、加最大重试次数</td></tr>
+<tr><td><code>GC task thread</code> 多且频繁</td><td>内存泄漏/堆太小</td><td><code>jstat -gcutil 3210 1000</code>、堆转储分析</td></tr>
+<tr><td>大量 <code>BLOCKED</code> 线程等同一把锁</td><td>锁竞争/死锁</td><td><code>jstack</code> 搜 <code>deadlock</code>、缩小锁范围</td></tr>
+<tr><td>正则回溯</td><td>复杂正则处理长文本</td><td>换正则或限制输入长度</td></tr>
+</tbody>
+</table>
+<p><strong>第 6 步（可选）：jstat 看 GC</strong>：</p>
+<pre><code class="language-bash">jstat -gcutil 3210 1000 5</code></pre>
+<p>示例输出：</p>
+<pre><code class="language-text">  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT
+  0.00  96.09  82.31  71.02  94.11  90.27   312    4.120     3    1.873    5.993</code></pre>
+<p><code>FGC=3</code> 且 <code>GCT</code> 持续增长就要警惕内存问题。</p>
+<blockquote>
+<p>记忆法：<strong>top 找进程 → top -Hp 找线程 → printf 转 hex → jstack 找 nid → 看第一行业务帧</strong>。</p>
+</blockquote>
+<h3>7.1.3 场景三：端口被占用 / 服务没起来</h3>
+<pre><code class="language-bash">ss -lntp | grep 8080          # 推荐：ss 比 netstat 更快
+netstat -lntp | grep 8080     # 老系统常用
+lsof -i :8080                 # 看是哪个进程占用
+ps -ef | grep java            # 看应用进程是否还在</code></pre>
+<p>判断逻辑：</p>
+<ul>
+<li>有 LISTEN 但接口 404：可能起的是别的服务，核对 <code>curl -s localhost:8080/internal/metrics</code>；</li>
+<li>没有 LISTEN 且 <code>docker ps</code> 看不到容器：<code>docker compose logs app</code> 看启动日志；</li>
+<li>Address already in use：换端口或先杀占用进程（生产先确认归属）。</li>
+</ul>
+<h3>7.1.4 场景四：磁盘满导致写日志失败</h3>
+<pre><code class="language-bash">df -h                          # 看哪个挂载点满
+du -sh /var/lib/docker /app/logs /var/log 2&gt;/dev/null
+find /app/logs -type f -size +100M -exec ls -lh {} \;</code></pre>
+<p>处理顺序：清理大日志（保留最近 N 天）→ 配置 logrotate 或 Docker <code>max-size</code> → 给数据盘扩容。本项目 compose 中给 MySQL/Redis/Prometheus/Grafana 都挂了命名卷，避免容器层写满宿主盘。</p>
+<h3>7.1.5 场景五：systemctl 管理服务</h3>
+<p>不使用 Docker 的裸机部署方式：</p>
+<pre><code class="language-bash">sudo systemctl start railway-12306       # 启动
+sudo systemctl status railway-12306      # 状态与最近日志
+sudo systemctl enable railway-12306      # 开机自启
+sudo systemctl restart railway-12306     # 重启
+journalctl -u railway-12306 -n 100 -f    # 跟日志（排查时）</code></pre>
+<p>对应的 <code>railway-12306.service</code> 关键项：</p>
+<pre><code class="language-ini">[Service]
+User=railway
+WorkingDirectory=/opt/railway
+ExecStart=/usr/bin/java -Xms256m -Xmx512m -jar app.jar
+Restart=on-failure
+Environment=SPRING_PROFILES_ACTIVE=prod</code></pre>
+<h3>7.1.6 grep / awk / sed 三件套</h3>
+<p><strong>grep：过滤</strong>。找错误、找请求、找追踪号：</p>
+<pre><code class="language-bash">grep -n "系统异常" logs/railway-12306.log
+grep -c "POST /api/order/grab" logs/railway-12306.log
+grep -E "ERROR|WARN" logs/railway-12306.log | wc -l</code></pre>
+<p><strong>awk：按列统计</strong>。Nginx 访问日志里统计状态码分布、慢请求：</p>
+<pre><code class="language-bash">awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c | sort -rn
+awk '$NF &gt; 1 {print}' /var/log/nginx/access.log | head    # rt&gt;1s 的慢请求
+awk '{sum+=$NF; count++} END {print "avg", sum/count}' /var/log/nginx/access.log</code></pre>
+<p><strong>sed：批量替换与提取</strong>。日志脱敏、版本号替换：</p>
+<pre><code class="language-bash">sed -i 's/1.0.0/1.0.1/g' config/*.yml
+sed -n '100,120p' logs/railway-12306.log
+sed 's/\(1[0-9]\{5\}\)[0-9]\{8\}\([0-9xX]\{4\}\)/\1********\2/g' logs/app.log   # 证件号脱敏</code></pre>
+<p><strong>组合技</strong>：找最慢的三个接口：</p>
+<pre><code class="language-bash">awk '{print $7, $NF}' /var/log/nginx/access.log | sort -k2 -nr | head -3</code></pre>
+<hr />
+<h2>7.2 Dockerfile：多阶段构建</h2>
+<h3>7.2.1 是什么</h3>
+<p>Dockerfile 是镜像的"构建脚本"。本项目采用<strong>多阶段构建</strong>：第一阶段用 Maven 镜像编译打包，第二阶段只拷贝 jar 到 JRE 镜像，产物更小、又不把源码和 Maven 缓存带进运行镜像。</p>
+<h3>7.2.2 逐段解读</h3>
+<pre><code class="language-dockerfile">FROM maven:3.9.9-eclipse-temurin-17 AS build
+WORKDIR /build
+
+COPY pom.xml ./
+RUN mvn -B -q dependency:go-offline
+
+COPY src ./src
+RUN mvn -B -q -DskipTests package
+
+FROM eclipse-temurin:17-jre
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends curl \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=build /build/target/railway-12306-0.0.1-SNAPSHOT.jar app.jar
+
+ENV TZ=Asia/Shanghai
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=10 \
+    CMD curl -fsS http://localhost:8080/internal/metrics || exit 1
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]</code></pre>
+<p>要点：</p>
+<ol>
+<li><strong>先 COPY pom.xml 再依赖下载</strong>：pom 不改时这一层命中缓存，改代码不用重新下载依赖；</li>
+<li><strong><code>-DskipTests</code></strong>：镜像构建时不跑测试（测试在 CI 的 <code>mvn test</code> 阶段做），加快构建；</li>
+<li><strong>运行镜像只装 curl</strong>：给 HEALTHCHECK 用；JRE 基础镜像不含 curl；</li>
+<li><strong><code>TZ=Asia/Shanghai</code></strong>：保证订单时间、调度任务时间正确；</li>
+<li><strong><code>JAVA_OPTS</code> 用环境变量</strong>：compose 可覆盖堆大小；</li>
+<li><strong><code>ENTRYPOINT</code> 用 <code>sh -c</code></strong>：让 <code>$JAVA_OPTS</code> 生效（exec 形式不会展开变量）。</li>
+</ol>
+<h3>7.2.3 为什么用 <code>.dockerignore</code></h3>
+<pre><code class="language-text">target
+.git
+.idea
+*.iml
+docs
+*.md
+docker-compose.yml
+deploy</code></pre>
+<p>不忽略 <code>target/</code> 的话，几百 MB 的构建产物会被塞进构建上下文，构建变慢甚至失败；忽略 docs 与 deploy 可减小上下文。</p>
+<h3>7.2.4 常用命令</h3>
+<pre><code class="language-bash">docker build -t railway-12306:latest .        # 构建
+docker images railway-12306                   # 看镜像大小
+docker run --rm -p 8080:8080 railway-12306:latest   # 前台运行（学习用）
+docker run -d -p 8080:8080 --name railway-app railway-12306:latest
+docker logs -f railway-app                    # 看日志
+docker exec -it railway-app sh                # 进容器
+docker inspect --format='{{.State.Health.Status}}' railway-app   # 健康状态</code></pre>
+<h3>7.2.5 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>构建卡在 dependency 下载</td><td>网络/镜像源慢</td><td>配 Maven 镜像源，或先本地 <code>mvn package</code> 用缓存</td></tr>
+<tr><td><code>COPY failed: no source files</code></td><td>上下文不对或 <code>.dockerignore</code> 排除了</td><td>确认 <code>docker build</code> 的 context 与 ignore</td></tr>
+<tr><td>容器起来就退出</td><td>端口冲突/数据库连不上</td><td><code>docker logs</code> 看异常；先起 MySQL</td></tr>
+<tr><td>健康检查一直 unhealthy</td><td><code>/internal/metrics</code> 404 或 curl 不存在</td><td>确认端点存在、运行镜像装了 curl</td></tr>
+<tr><td><code>OOMKilled</code></td><td>堆超限</td><td>调 <code>JAVA_OPTS -Xmx</code> 并给容器内存限制留余量</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>7.3 docker-compose：一条命令启动全项目</h2>
+<h3>7.3.1 服务清单</h3>
+<table>
+<thead>
+<tr><th>服务</th><th>镜像</th><th>端口</th><th>作用</th><th>默认启动</th></tr>
+</thead>
+<tbody>
+<tr><td><code>mysql</code></td><td>mysql:8.4</td><td>3306</td><td>业务库，首次启动自动导入 <code>sql/init.sql</code></td><td>✅</td></tr>
+<tr><td><code>redis</code></td><td>redis:7-alpine</td><td>6379</td><td>分布式锁与库存缓存（第4章）</td><td>✅</td></tr>
+<tr><td><code>app</code></td><td>本地构建</td><td>8080</td><td>Spring Boot 应用</td><td>✅</td></tr>
+<tr><td><code>nginx</code></td><td>nginx:1.27-alpine</td><td>80</td><td>反向代理与负载均衡</td><td>✅</td></tr>
+<tr><td><code>prometheus</code></td><td>prom/prometheus:v2.54.1</td><td>9090</td><td>指标采集</td><td>profile <code>monitoring</code></td></tr>
+<tr><td><code>grafana</code></td><td>grafana/grafana:11.2.0</td><td>3000</td><td>监控看板</td><td>profile <code>monitoring</code></td></tr>
+<tr><td><code>skywalking-oap/ui</code></td><td>apache/skywalking:*</td><td>11800/12800/8090</td><td>链路追踪</td><td>profile <code>tracing</code></td></tr>
+<tr><td><code>rocketmq-namesrv/broker</code></td><td>apache/rocketmq:5.3.1</td><td>9876/10911</td><td>消息队列（接入预留）</td><td>profile <code>mq</code></td></tr>
+</tbody>
+</table>
+<h3>7.3.2 为什么这样编排</h3>
+<ul>
+<li><strong>healthcheck + depends_on</strong>：应用等到 MySQL、Redis 健康后再启动，避免"启动即报连接失败"；Nginx 也以 <code>condition: service_healthy</code> 等待应用，健康检查复用 Dockerfile 中的 <code>/internal/metrics</code> 探针：</li>
+</ul>
+<pre><code class="language-yaml">depends_on:
+  mysql:
+    condition: service_healthy
+  redis:
+    condition: service_healthy</code></pre>
+<ul>
+<li><strong>数据卷</strong>：<code>mysql-data</code>、<code>redis-data</code> 等命名卷把数据放在容器外，<code>docker compose down</code> 不丢数据（加 <code>-v</code> 才清）；</li>
+<li><strong>初始化脚本</strong>：<code>./sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro</code>，MySQL 首次初始化自动建库建表灌数据；</li>
+<li><strong>环境变量对接双模式</strong>：把第4-6章的开关切到真实组件：</li>
+</ul>
+<pre><code class="language-yaml">RAILWAY_REDIS_MODE: redis        # railway.redis.mode
+RAILWAY_GRAB_ORDER_STORE: db     # railway.grab.order-store
+RAILWAY_ROUTE_MODE: db           # railway.route.mode
+RAILWAY_AI_DATA_MODE: db         # railway.ai.data-mode
+RAILWAY_AI_MODE: ${RAILWAY_AI_MODE:-mock}
+DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}</code></pre>
+<p>Spring Boot 的 relaxed binding 会把 <code>RAILWAY_REDIS_MODE</code> 映射到 <code>railway.redis.mode</code>，不需要改代码。</p>
+<ul>
+<li><strong>profiles 按需启动</strong>：默认只起核心四件套，重量级的 MQ、SkyWalking、Prometheus 用 profile 分开，避免开发机被拖垮；</li>
+<li><strong>安全提示</strong>：compose 中的 MySQL/Grafana 密码为本地开发默认值（<code>railway123</code>），生产必须通过 <code>MYSQL_ROOT_PASSWORD</code>、<code>GRAFANA_PASSWORD</code> 环境变量覆盖，且不要提交 <code>.env</code> 到 Git；LLM Key 只通过环境变量注入；</li>
+<li><strong>消息队列说明</strong>：第4章实际用的是内存队列（<code>GrabQueue</code>），<code>mq</code> profile 里的 RocketMQ 是第8章/生产接入的预留编排，配置好但应用尚未依赖它——文档如实标注，不把它算进"已联调"。</li>
+</ul>
+<h3>7.3.3 命令</h3>
+<pre><code class="language-bash">docker compose up -d                     # 启动核心服务（首次会构建镜像）
+docker compose up -d --profile monitoring   # 额外启动 Prometheus + Grafana
+docker compose up -d --profile tracing      # 额外启动 SkyWalking
+docker compose up -d --profile mq           # 额外启动 RocketMQ
+docker compose ps                        # 查看状态与健康
+docker compose logs -f app               # 跟应用日志
+docker compose logs -f nginx             # 跟 Nginx 日志
+docker compose down                      # 停止并删除容器（保留数据卷）
+docker compose down -v                   # 连数据卷一起删（谨慎）
+docker compose config                     # 校验 compose 文件语法
+docker compose up -d --scale app=2       # 应用水平扩容到 2 实例（配合 Nginx 动态解析）</code></pre>
+<blockquote>
+<p>样例数据提示：<code>sql/init.sql</code> 的库存与候补样例集中在 2026-04-15 ~ 2026-05-16；切到 <code>db</code> 模式做换乘/抢票演示时请带上 <code>date=2026-04-15</code>（或先重新灌入当天数据），否则换乘图会走"无票价按里程估算"的兜底逻辑。</p>
+</blockquote>
+<h3>7.3.4 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>app 反复重启</td><td>MySQL 还没初始化完</td><td>看 healthcheck；<code>docker compose logs mysql</code></td></tr>
+<tr><td>3306/6379 被本机占用</td><td>本地已装同端口服务</td><td>改映射端口，如 <code>3307:3306</code></td></tr>
+<tr><td>卷里是旧数据</td><td>init.sql 只在首次初始化执行</td><td><code>down -v</code> 后再 <code>up</code>（会清数据）</td></tr>
+<tr><td>profile 服务没起来</td><td>忘了 <code>--profile</code></td><td>命令加 <code>--profile monitoring</code></td></tr>
+<tr><td><code>--scale</code> 后请求仍打一台</td><td>Nginx 未用动态解析</td><td>见 7.4 的 <code>resolver</code> 配置</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>7.4 Nginx 反向代理</h2>
+<h3>7.4.1 配置逐段解读</h3>
+<pre><code class="language-nginx">resolver 127.0.0.11 valid=10s ipv6=off;
+set $railway_backend http://app:8080;
+
+server {
+    listen 80;
+    server_name _;
+
+    location = /nginx-health { access_log off; return 200 "ok\n"; }
+
+    location /internal/ { return 403; }
+
+    location / {
+        proxy_pass $railway_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 30s;
+        proxy_send_timeout 30s;
+    }
+}</code></pre>
+<p>关键点：</p>
+<ol>
+<li><strong><code>resolver 127.0.0.11</code></strong>：Docker 内置 DNS。用变量 <code>$railway_backend</code> 配合 <code>proxy_pass</code>，Nginx 会在运行时重新解析 <code>app</code>，执行 <code>--scale app=2</code> 后自动轮询到两个容器；直接写 <code>upstream app:8080</code> 只在启动时解析一次，扩容不生效；</li>
+<li><strong><code>proxy_set_header X-Forwarded-For</code></strong>：应用与日志能看到真实客户端 IP；</li>
+<li><strong><code>location /internal/ { return 403; }</code></strong>：指标端点只允许内网 Prometheus 访问，不对公网暴露；</li>
+<li><strong><code>/nginx-health</code></strong>：给 compose 健康检查用的轻量探针；</li>
+<li><strong>超时</strong>：连接 3s、读写 30s，与抢票接口的快速失败策略一致；</li>
+<li><strong>gzip</strong>：JSON 响应开启压缩，减少带宽。</li>
+</ol>
+<h3>7.4.2 负载均衡验证</h3>
+<pre><code class="language-bash">docker compose up -d --scale app=2
+for i in $(seq 1 6); do curl -s http://localhost/internal/none 2&gt;/dev/null; done
+docker compose logs nginx | grep upstream     # 看 upstream 地址分布</code></pre>
+<p><code>access.log</code> 的 <code>upstream=</code> 字段会记录实际转发到的容器 IP，可以直接确认是否轮询。</p>
+<h3>7.4.3 Nginx 配置校验</h3>
+<pre><code class="language-bash">docker compose exec nginx nginx -t           # 语法检查
+docker compose exec nginx nginx -s reload    # 不改容器热加载配置</code></pre>
+<p>本机无 Docker/Nginx，本章用 <code>DeploymentConfigTest</code> 对 <code>resolver</code>、<code>proxy_pass</code>、<code>/internal/</code> 拒绝、健康探针等关键指令做静态校验。</p>
+<h3>7.4.4 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>502 Bad Gateway</td><td>app 没起来/端口错</td><td><code>docker compose ps</code> 查 app 健康</td></tr>
+<tr><td>504 Gateway Timeout</td><td>后端处理超 30s</td><td>查慢接口；必要时调 <code>proxy_read_timeout</code></td></tr>
+<tr><td>上传大 body 413</td><td>超过 <code>client_max_body_size</code></td><td>调大限制</td></tr>
+<tr><td>扩容不轮询</td><td>用了 upstream 写死</td><td>改 <code>resolver</code> + 变量写法</td></tr>
+<tr><td>拿到内网 IP 而不是客户端 IP</td><td>没转发头</td><td>检查 <code>X-Real-IP</code>/<code>X-Forwarded-For</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>7.5 监控：Prometheus + Grafana + SkyWalking</h2>
+<h3>7.5.1 为什么自实现 <code>/internal/metrics</code></h3>
+<p>标准做法是引入 <code>spring-boot-starter-actuator</code> + <code>micrometer-registry-prometheus</code>。本章环境无法联网下载新依赖，因此用 <code>java.lang.management</code> 写了一个<strong>轻量 Prometheus 文本格式端点</strong>（<code>MetricsController</code>），覆盖 JVM 核心指标：</p>
+<pre><code class="language-text">railway_up                                    服务存活
+railway_jvm_heap_used_bytes                   堆已用
+railway_jvm_heap_committed_bytes              堆已提交
+railway_jvm_heap_max_bytes                    堆上限
+railway_jvm_nonheap_used_bytes                非堆已用
+railway_jvm_threads                           线程数
+railway_jvm_uptime_seconds                    运行时长
+railway_jvm_gc_collections_total              GC 次数
+railway_jvm_gc_time_millis_total              GC 耗时
+railway_system_load_average                   系统负载
+railway_system_processors                     CPU 核数</code></pre>
+<blockquote>
+<p>说明：<code>railway_system_load_average</code> 在部分操作系统（如 Windows）上不可用时会返回 <code>-1.0</code>，Linux 生产环境显示真实 1 分钟负载；看板对该指标仅作趋势参考，核心告警用 <code>railway_up</code> 与堆内存比例。</p>
+</blockquote>
+<p>生产替换为 Actuator 的步骤：</p>
+<ol>
+<li><code>pom.xml</code> 增加 <code>spring-boot-starter-actuator</code> 与 <code>micrometer-registry-prometheus</code>；</li>
+<li><code>application.yml</code> 暴露 <code>management.endpoints.web.exposure.include: health,metrics,prometheus</code>；</li>
+<li>Prometheus 的 <code>metrics_path</code> 改为 <code>/actuator/prometheus</code>；</li>
+<li>删除或保留 <code>/internal/metrics</code> 作为业务自定义指标入口。</li>
+</ol>
+<h3>7.5.2 Prometheus 采集</h3>
+<p><code>deploy/prometheus/prometheus.yml</code>：</p>
+<pre><code class="language-yaml">global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: railway-app
+    metrics_path: /internal/metrics
+    static_configs:
+      - targets: ["app:8080"]
+        labels:
+          application: railway-12306</code></pre>
+<p>验证：</p>
+<pre><code class="language-bash">open http://localhost:9090/targets        # Targets 页看 railway-app 是否 UP
+curl -s http://localhost:9090/api/v1/query?query=railway_up   # 查询指标</code></pre>
+<p>告警示例（<code>deploy/prometheus/</code> 可新增 <code>alert-rules.yml</code>）：</p>
+<pre><code class="language-yaml">groups:
+  - name: railway
+    rules:
+      - alert: RailwayAppDown
+        expr: railway_up == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: "应用存活指标为0" }
+      - alert: HeapUsageHigh
+        expr: railway_jvm_heap_used_bytes / railway_jvm_heap_max_bytes &gt; 0.85
+        for: 5m
+        labels: { severity: warning }</code></pre>
+<h3>7.5.3 Grafana 看板</h3>
+<p>Grafana 用 provisioning 自动加载数据源与看板，无需手工点：</p>
+<pre><code class="language-text">deploy/grafana/
+├── provisioning/
+│   ├── datasources/prometheus.yml     # 数据源指向 http://prometheus:9090
+│   └── dashboards/dashboard.yml       # 看板目录 /var/lib/grafana/dashboards
+└── dashboards/railway-overview.json   # 应用概览看板（6 个面板）</code></pre>
+<p>启动：</p>
+<pre><code class="language-bash">docker compose up -d --profile monitoring
+open http://localhost:3000       # 默认 admin / railway123（GF_SECURITY_ADMIN_PASSWORD）</code></pre>
+<p>看板包含：应用存活、线程数、运行时长、GC 次数、堆内存曲线、系统负载。</p>
+<h3>7.5.4 SkyWalking 链路追踪</h3>
+<p><strong>组件</strong>：OAP（接收链路数据）+ UI（展示）+ Java Agent（附着到应用）。</p>
+<pre><code class="language-bash">docker compose up -d --profile tracing
+open http://localhost:8090       # SkyWalking UI</code></pre>
+<p>应用侧接入（把 agent 解压到宿主机 <code>/opt/skywalking-agent</code> 并挂载）：</p>
+<pre><code class="language-bash">docker run -d --name railway-app \
+  --network railway-12306_railway-net \
+  -p 8080:8080 \
+  -e JAVA_TOOL_OPTIONS="-javaagent:/skywalking/agent/skywalking-agent.jar -Dskywalking.agent.service_name=railway-12306 -Dskywalking.collector.backend_service=skywalking-oap:11800" \
+  -v /opt/skywalking-agent:/skywalking/agent:ro \
+  railway-12306:latest</code></pre>
+<p>或者使用 <code>deploy/skywalking/agent.env</code>：</p>
+<pre><code class="language-text">JAVA_TOOL_OPTIONS=-javaagent:/skywalking/agent/skywalking-agent.jar -Dskywalking.agent.service_name=railway-12306 -Dskywalking.collector.backend_service=skywalking-oap:11800</code></pre>
+<pre><code class="language-bash">docker run -d --env-file deploy/skywalking/agent.env ... railway-12306:latest</code></pre>
+<p>说明：本机未安装 Docker、未下载 SkyWalking Agent，接入步骤为<strong>代码/配置就绪、未实机验证</strong>。真实接入时优先用 SkyWalking 官方 agent 分发包，并按版本核对 OAP 端口（默认 11800）。</p>
+<h3>7.5.5 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>Target DOWN</td><td>Prometheus 连不上 app 或路径错</td><td><code>docker compose logs prometheus</code>，容器内 <code>wget app:8080/internal/metrics</code></td></tr>
+<tr><td>指标为 0 或缺失</td><td>端点被 Nginx 拦了</td><td>Prometheus 直连 app，不走 Nginx</td></tr>
+<tr><td>Grafana 无数据源</td><td>provisioning 目录挂载错</td><td>检查 compose 挂载路径</td></tr>
+<tr><td>SkyWalking 没数据</td><td>agent 未挂载/服务名不对</td><td>看应用日志中 agent 输出与 OAP 连通性</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>7.6 验收复现步骤</h2>
+<blockquote>
+<p>以下步骤在具备 Docker 的 Linux/macOS/Windows(Desktop) 环境执行；本机无 Docker，未实机执行。</p>
+</blockquote>
+<p><strong>验收 1：docker-compose up 启动全项目</strong></p>
+<pre><code class="language-bash">docker compose config          # 1) 语法校验
+docker compose up -d           # 2) 启动 mysql/redis/app/nginx
+docker compose ps              # 3) 四个服务 healthy
+curl -s http://localhost/api/trains?from=北京南\&amp;to=上海虹桥\&amp;date=2026-04-15
+curl -s http://localhost/internal/... # 4) 经 Nginx 访问应 403（指标仅内网）
+curl -s http://localhost:8080/internal/metrics | head    # 5) 直连看指标</code></pre>
+<p>预期：车次查询返回 G1，Nginx 80 端口可用，<code>/internal</code> 对外 403。</p>
+<p><strong>验收 2：日志定位空指针</strong></p>
+<pre><code class="language-bash">docker compose logs app | grep -n "NullPointerException" -A 20</code></pre>
+<p>预期：能看到异常类型、业务包第一帧与行号；结合 <code>GlobalExceptionHandler</code> 的"系统异常"日志定位。</p>
+<p><strong>验收 3：top + jstack 定位 CPU 高</strong></p>
+<pre><code class="language-bash">docker exec -it railway-app sh
+top -c                 # 找 java 进程 PID
+top -Hp &lt;PID&gt;          # 找高 CPU 线程 TID
+printf "%x\n" &lt;TID&gt;    # 转 hex
+jstack &lt;PID&gt; &gt; /tmp/jstack.txt
+grep -n "nid=0x&lt;hex&gt;" -A 30 /tmp/jstack.txt</code></pre>
+<p>预期：得到线程名与业务栈帧，据此优化代码。</p>
+<p><strong>验收 4：Nginx 反向代理</strong></p>
+<pre><code class="language-bash">docker compose exec nginx nginx -t
+curl -s http://localhost/nginx-health          # ok
+docker compose up -d --scale app=2
+docker compose logs nginx | grep upstream      # 出现多个 upstream IP</code></pre>
+<p>预期：语法 OK、健康探针 200、扩容后轮询两个实例。</p>
+<hr />
+<h2>7.7 测试与验证</h2>
+<h3>7.7.1 本章新增测试（6 个）</h3>
+<table>
+<thead>
+<tr><th>测试类</th><th>数量</th><th>覆盖</th></tr>
+</thead>
+<tbody>
+<tr><td><code>MetricsControllerTest</code></td><td>1</td><td>指标端点 Prometheus 文本格式与关键指标</td></tr>
+<tr><td><code>DeploymentConfigTest</code></td><td>5</td><td>Dockerfile 多阶段与健康检查、compose 服务/profile/双模式环境变量、Nginx resolver 与代理、Prometheus 抓取路径、Grafana 看板 JSON</td></tr>
+</tbody>
+</table>
+<h3>7.7.2 运行结果</h3>
+<pre><code class="language-bash">.\mvnw.cmd test</code></pre>
+<pre><code class="language-text">Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS</code></pre>
+<p>累计 80 个测试通过（第0-6章 74 个 + 本章 6 个）。</p>
+<h3>7.7.3 未实机验证项（如实标注）</h3>
+<ul>
+<li>Docker 镜像构建与 <code>docker compose up</code> 未执行（本机无 Docker）；</li>
+<li>Nginx <code>nginx -t</code> 未执行（无 Nginx）；</li>
+<li>Prometheus/Grafana/SkyWalking 未实际拉起；</li>
+<li>Linux 排查命令为文档与静态配置级验证，未在 Linux 目标机执行。</li>
+</ul>
+<p>替代验证：配置静态守护测试 + 7.6 节可复现步骤。</p>
+<hr />
+<h2>7.8 本章代码地图</h2>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Dockerfile</code></td><td>多阶段构建、健康检查、JVM 参数</td></tr>
+<tr><td><code>.dockerignore</code></td><td>缩小构建上下文</td></tr>
+<tr><td><code>docker-compose.yml</code></td><td>MySQL/Redis/App/Nginx + monitoring/tracing/mq profiles</td></tr>
+<tr><td><code>deploy/nginx/nginx.conf</code></td><td>反向代理、动态解析、负载均衡、内网端点保护</td></tr>
+<tr><td><code>deploy/prometheus/prometheus.yml</code></td><td>指标抓取配置</td></tr>
+<tr><td><code>deploy/grafana/provisioning/*</code></td><td>数据源与看板自动加载</td></tr>
+<tr><td><code>deploy/grafana/dashboards/railway-overview.json</code></td><td>应用概览看板</td></tr>
+<tr><td><code>deploy/skywalking/agent.env</code></td><td>SkyWalking Agent 环境变量示例</td></tr>
+<tr><td><code>src/main/java/com/railway/controller/MetricsController.java</code></td><td><code>/internal/metrics</code> 指标端点</td></tr>
+<tr><td><code>docs/mindmaps/chapter-07-start.mmd</code> / <code>chapter-07-end.mmd</code></td><td>本章导图</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>7.9 高频面试问答</h2>
+<ol>
+<li><strong>"Dockerfile 为什么要多阶段构建？"</strong></li>
+</ol>
+<p>编译依赖（Maven/JDK）只在构建阶段，运行镜像只保留 JRE + jar，镜像从 700MB+ 降到 200MB 级，攻击面也更小。</p>
+<ol>
+<li><strong>"Compose 里 depends_on 为什么不够？"</strong></li>
+</ol>
+<p>默认 <code>depends_on</code> 只保证启动顺序，不保证对方"可用"；要配合 <code>healthcheck</code> + <code>condition: service_healthy</code>，否则应用可能先于 MySQL 就绪而启动失败。</p>
+<ol>
+<li><strong>"Nginx 怎么支持应用扩容？"</strong></li>
+</ol>
+<p>用 Docker 内置 DNS <code>resolver 127.0.0.11</code> + 变量 <code>proxy_pass $backend</code>，Nginx 运行时重新解析服务名，<code>--scale app=2</code> 后自动轮询；写死 upstream 只在启动时解析一次。</p>
+<ol>
+<li><strong>"线上 CPU 高怎么排查？"</strong></li>
+</ol>
+<p><code>top</code> 找进程 → <code>top -Hp</code> 找线程 → <code>printf %x</code> 转十六进制 → <code>jstack</code> 搜 <code>nid</code> → 看第一行业务帧；GC 问题再用 <code>jstat -gcutil</code>。</p>
+<ol>
+<li><strong>"日志太多怎么处理？"</strong></li>
+</ol>
+<p>结构化日志 + 分级输出，grep/awk 快速过滤；文件按天切割并设置保留天数，Docker 侧限制日志大小；关键链路带 traceId 方便串联。</p>
+<ol>
+<li><strong>"监控为什么先用 Prometheus + Grafana？"</strong></li>
+</ol>
+<p>拉模式部署简单、生态成熟、指标模型统一；应用只要暴露 <code>/metrics</code> 文本即可接入。链路追踪再用 SkyWalking 补充。</p>
+<ol>
+<li><strong>"容器里 JVM 参数怎么给？"</strong></li>
+</ol>
+<p>用环境变量 <code>JAVA_OPTS</code> 注入，<code>ENTRYPOINT</code> 用 <code>sh -c</code> 展开；容器内存限制要大于 <code>-Xmx</code> 加元空间/线程栈的余量，避免 OOMKilled。</p>
+<hr />
+<h2>7.10 自检三问</h2>
+<ol>
+<li><strong>是什么</strong>：Dockerfile 把应用打成镜像，Compose 编排多服务并管理依赖与数据卷，Nginx 做反代与负载均衡，Prometheus/Grafana 做指标监控，<code>/internal/metrics</code> 暴露 JVM 指标。</li>
+<li><strong>为什么</strong>：一条命令复现整套环境，消除"我这里能跑"；健康检查保证启动顺序；Nginx 屏蔽内网端点并支持扩容；监控指标让排障从"猜"变成"看"。</li>
+<li><strong>怎么排错</strong>：起不来先看 <code>docker compose logs</code> 与健康状态；接口异常用日志定位业务帧；CPU 高按 top→Hp→hex→jstack 链路；监控 Target DOWN 先测容器内连通性；Nginx 502 查后端、504 查超时。</li>
+</ol>
+<hr />
+<h2>7.11 下一章预告</h2>
+<p><strong>第8章 项目收尾与铁路局考核包装</strong>：把八章能力沉淀为可展示的成果——Swagger/Knife4j 接口文档、JUnit+Mockito 测试体系与覆盖率、Git 提交规范、面向铁路局技术岗的 README（三句话讲清业务痛点 + STAR 亮点 + 量化指标）、部署链接与项目缘起。最终产出总复盘导图 <code>99-final.mmd</code>，完成从"能跑"到"能讲、能面"的收尾。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-07.html</span>
+  <span>第7章 Linux部署与运维</span>
+</footer>
+</body>
+</html>

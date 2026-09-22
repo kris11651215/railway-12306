@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第1章 Java核心基础与实体建模 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第1章 Java核心基础与实体建模"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第1章 Java核心基础与实体建模</span>
+</header>
+<main class="chapter">
+<h1>第1章 Java核心基础与实体建模</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第1-2周后段，约3-4天<br />
+一句话：把铁路业务描述翻译成 Java 类，让控制台第一次"查得出车次"。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-01-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-01-start.mmd -o docs/print/assets/chapter-01-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第1章 Java核心基础 🔄</strong><ul><li>本章目标<ul><li>吃透OOP三大特性</li><li>会用List Map Set</li><li>完成四类实体建模 📦</li><li>控制台车次查询 📦</li></ul></li><li>核心知识点<ul><li>OOP<ul><li>封装 私有字段</li><li>继承 抽象基类</li><li>多态 重写分类方法</li></ul></li><li>集合框架<ul><li>List 存车次</li><li>Map 建车站索引</li><li>Set 站名集合</li></ul></li><li>异常处理<ul><li>受检与运行时</li><li>自定义异常</li><li>Optional与资源关闭</li></ul></li><li>Maven依赖<ul><li>传递依赖</li><li>冲突调解</li><li>exclusions</li><li>dependencyManagement</li></ul></li></ul></li><li>代码产出<ul><li>Station等四实体建模 📦</li><li>五大系统枚举 📦</li><li>TrainQueryService 📦</li><li>ConsoleTrainQuery 📦</li></ul></li><li>验收标准<ul><li>输站名出车次 🎯</li><li>字段含等级上下行路局 🎯</li><li>Map索引List车次 🎯</li></ul></li><li>与前后章关联<ul><li>承 第0章环境与业务</li><li>启 第2章MySQL建表</li></ul></li><li>预计耗时<ul><li>第1-2周后段</li><li>约3-4天</li></ul></li><li>重点难点<ul><li>面向对象建模 ⭐</li><li>List与Map选型 ⭐🧠</li><li>字段与表结构对齐 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>掌握 OOP 三大特性</td><td>封装、继承、多态落到实体代码</td><td>能指出代码中三者分别在哪儿</td></tr>
+<tr><td>熟练掌握集合框架</td><td>List 存车次、Map 建车站索引、Set 收集站名</td><td>能解释为什么这样选型</td></tr>
+<tr><td>完成实体建模</td><td>Station、Train、Seat、Ticket 四类实体</td><td>字段合理，含等级/上下行/路局</td></tr>
+<tr><td>完成控制台查询</td><td><code>ConsoleTrainQuery</code> 输入两站打印车次</td><td>运行后输出正确车次列表</td></tr>
+</tbody>
+</table>
+<p>本章只学 Java 基础的 L3 深度：会写、懂原理、能排错。<strong>不深入 JVM 调优，不读集合源码</strong>。</p>
+<hr />
+<h2>1.1 为什么第1章是"建模"</h2>
+<p>第0章我们知道了铁路业务长什么样：车次有等级、方向有上下行、站点属于不同路局、座位要按区段复用。接下来要做的第一件事，不是写接口，而是<strong>把业务对象变成 Java 类</strong>。</p>
+<p>一个简单的判断：如果类设计得好，后面的数据库表、API 返回值、缓存结构都水到渠成；如果类设计得乱，后面每一章都在还债。所以本章宁可慢一点，把四个核心实体的字段想清楚：</p>
+<pre><code>业务语言                 Java 语言
+车站、所属路局、站等级  →  Station
+车次号、等级、上下行    →  Train
+座位类型、定员、余票    →  Seat
+订单号、乘车人、状态    →  Ticket</code></pre>
+<hr />
+<h2>1.2 OOP 三大特性在铁路建模中的落地</h2>
+<h3>1.2.1 封装：私有字段 + 公开方法</h3>
+<p>所有实体字段都用 <code>private</code> 修饰，外部只能通过 <code>getter/setter</code> 访问：</p>
+<pre><code class="language-java">public class Station extends RailwayEntity {
+
+    private String stationCode;
+    private String stationName;
+    private String bureau;
+    private String affiliatedDepot;
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
+    }
+}</code></pre>
+<p>封装的价值不只是"规范"，而是<strong>留出控制点</strong>：</p>
+<ul>
+<li>以后要在 <code>setRemainingCount</code> 里校验"余票不能为负"，改一处即可；</li>
+<li>以后字段改名（<code>stationName</code> → <code>name</code>），只影响类的内部，不影响调用方；</li>
+<li>数据库映射框架（第3章 MyBatis）也依赖 getter/setter 取值、赋值。</li>
+</ul>
+<h3>1.2.2 继承：抽象基类 <code>RailwayEntity</code></h3>
+<p>四类实体都有主键 <code>id</code>，也有共同的"系统归属"概念，于是抽出抽象基类：</p>
+<pre><code class="language-java">public abstract class RailwayEntity {
+
+    private Long id;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public abstract RailwaySystem getSystemCategory();
+}</code></pre>
+<p>子类用 <code>extends</code> 继承：</p>
+<pre><code class="language-java">public class Station extends RailwayEntity {
+    @Override
+    public RailwaySystem getSystemCategory() {
+        return RailwaySystem.CAR_SERVICE;
+    }
+}</code></pre>
+<p>为什么是<strong>抽象类</strong>而不是普通父类或接口？对比一下：</p>
+<table>
+<thead>
+<tr><th>方案</th><th>能存字段吗</th><th>能强制子类实现方法吗</th><th>本场景是否合适</th></tr>
+</thead>
+<tbody>
+<tr><td>普通父类</td><td>能</td><td>不能</td><td>不合适，子类可能忘记分类方法</td></tr>
+<tr><td>接口</td><td>不能（只能常量）</td><td>能</td><td>可作补充，但 id 字段没处放</td></tr>
+<tr><td>抽象类</td><td>能</td><td>能</td><td>最合适，字段 + 强制实现兼得</td></tr>
+</tbody>
+</table>
+<h3>1.2.3 多态：同一个方法，不同的系统归属</h3>
+<p><code>getSystemCategory()</code> 在不同子类里返回不同结果，这就是多态——<strong>调用方只认父类类型，运行期执行子类实现</strong>：</p>
+<pre><code class="language-java">List&lt;RailwayEntity&gt; entities = List.of(station, train, seat, ticket);
+for (RailwayEntity entity : entities) {
+    System.out.println(entity.getSystemCategory().getChineseName());
+}</code></pre>
+<p>四类实体的系统归属如下：</p>
+<table>
+<thead>
+<tr><th>实体</th><th>系统归属</th><th>理由</th></tr>
+</thead>
+<tbody>
+<tr><td>Station</td><td>车务</td><td>车站由车务段管理，负责客运组织</td></tr>
+<tr><td>Train</td><td>车辆</td><td>车底（动车组/客车）属于车辆系统</td></tr>
+<tr><td>Seat</td><td>车辆</td><td>座位是车厢资源，随车底走</td></tr>
+<tr><td>Ticket</td><td>车务</td><td>售票、乘车服务属于客运业务</td></tr>
+</tbody>
+</table>
+<blockquote>
+<p>面试小知识：铁路五大系统是"车、机、工、电、辆"——车务、机务、工务、电务、车辆。做铁路项目时能自然说出这个分类，比背八股更能体现业务理解。</p>
+</blockquote>
+<hr />
+<h2>1.3 实体设计与五大系统</h2>
+<h3>1.3.1 车机工电辆一览</h3>
+<table>
+<thead>
+<tr><th>简称</th><th>系统</th><th>管什么</th><th>典型站段</th></tr>
+</thead>
+<tbody>
+<tr><td>车</td><td>车务</td><td>车站、调车、客运组织</td><td>车务段、客运段</td></tr>
+<tr><td>机</td><td>机务</td><td>机车运用与检修</td><td>机务段</td></tr>
+<tr><td>工</td><td>工务</td><td>线路、桥隧养护</td><td>工务段</td></tr>
+<tr><td>电</td><td>电务</td><td>信号、通信设备</td><td>电务段</td></tr>
+<tr><td>辆</td><td>车辆</td><td>客车、货车检修运用</td><td>车辆段、动车段</td></tr>
+</tbody>
+</table>
+<p><code>Station</code> 的 <code>affiliatedDepot</code> 字段就用来标注"所属机务段或车辆段"，例如广州南站标注"广州动车段"。这样数据模型天然带着铁路的组织维度，而不是一个通用电商系统。</p>
+<h3>1.3.2 Station 字段设计</h3>
+<table>
+<thead>
+<tr><th>字段</th><th>类型</th><th>说明</th><th>未来对应列</th></tr>
+</thead>
+<tbody>
+<tr><td>id</td><td>Long</td><td>主键</td><td>station.id</td></tr>
+<tr><td>stationCode</td><td>String</td><td>电报码，如 VNP</td><td>station_code</td></tr>
+<tr><td>stationName</td><td>String</td><td>站名，如北京南</td><td>station_name</td></tr>
+<tr><td>city</td><td>String</td><td>所在城市</td><td>city</td></tr>
+<tr><td>bureau</td><td>String</td><td>所属路局，如广铁集团</td><td>bureau</td></tr>
+<tr><td>affiliatedDepot</td><td>String</td><td>所属机务段/车辆段</td><td>affiliated_depot</td></tr>
+<tr><td>stationClass</td><td>String</td><td>站等级：特等/一等/二等</td><td>station_class</td></tr>
+<tr><td>hub</td><td>boolean</td><td>是否枢纽站</td><td>is_hub</td></tr>
+</tbody>
+</table>
+<h3>1.3.3 Train 字段设计（重点：等级、上下行、路局）</h3>
+<table>
+<thead>
+<tr><th>字段</th><th>类型</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>trainNo</td><td>String</td><td>车次号，如 G1、K599</td></tr>
+<tr><td>trainType</td><td>TrainType</td><td>车次等级，由车次号前缀自动推导</td></tr>
+<tr><td>direction</td><td>Direction</td><td>上下行（UP/DOWN）</td></tr>
+<tr><td>startStation / endStation</td><td>String</td><td>始发/终到站</td></tr>
+<tr><td>bureau</td><td>String</td><td>担当路局，如广铁集团</td></tr>
+<tr><td>departureTime / arrivalTime</td><td>LocalTime</td><td>发到时刻</td></tr>
+<tr><td>durationMinutes</td><td>int</td><td>历时（分钟）</td></tr>
+<tr><td>mileage</td><td>int</td><td>全程里程</td></tr>
+<tr><td>stopStations</td><td>List\&lt;String\&gt;</td><td>经停站（含始发终到，按站序排列）</td></tr>
+</tbody>
+</table>
+<p>车次等级不是手填的，而是从车次号推导：</p>
+<pre><code class="language-java">public static TrainType fromTrainNo(String trainNo) {
+    if (trainNo == null || trainNo.isEmpty()) {
+        throw new IllegalArgumentException("车次号不能为空");
+    }
+    char prefix = Character.toUpperCase(trainNo.charAt(0));
+    for (TrainType type : values()) {
+        if (type.name().charAt(0) == prefix) {
+            return type;
+        }
+    }
+    return P;
+}</code></pre>
+<p><code>stopStations</code> 是按站序排列的集合，它直接支撑控制台查询：<strong>出发站在集合中的下标必须小于到达站</strong>，才说明这趟车经过这两站且方向正确。这也是第2章 <code>train_station</code> 经停表、第5章路径规划的数据基础。</p>
+<h3>1.3.4 Seat 字段设计</h3>
+<table>
+<thead>
+<tr><th>字段</th><th>类型</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>trainNo</td><td>String</td><td>所属车次</td></tr>
+<tr><td>seatType</td><td>SeatType</td><td>商务座/一等座/二等座/卧铺/硬座等</td></tr>
+<tr><td>totalCount</td><td>int</td><td>定员</td></tr>
+<tr><td>remainingCount</td><td>int</td><td>余票（本章为全程口径）</td></tr>
+<tr><td>price</td><td>BigDecimal</td><td>票价，金额必须用 BigDecimal</td></tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意：本章 <code>remainingCount</code> 是"全程余票"的简化模型。第2章会把它拆成按区段的库存（席位复用），第4章再解决并发扣减。</p>
+</blockquote>
+<h3>1.3.5 Ticket 字段设计</h3>
+<table>
+<thead>
+<tr><th>字段</th><th>类型</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>ticketNo</td><td>String</td><td>车票号</td></tr>
+<tr><td>trainNo</td><td>String</td><td>车次</td></tr>
+<tr><td>fromStation / toStation</td><td>String</td><td>乘车区间</td></tr>
+<tr><td>seatType</td><td>SeatType</td><td>席别</td></tr>
+<tr><td>travelDate</td><td>LocalDate</td><td>乘车日期</td></tr>
+<tr><td>departureTime</td><td>LocalTime</td><td>发车时刻</td></tr>
+<tr><td>price</td><td>BigDecimal</td><td>实付金额</td></tr>
+<tr><td>carriageNo / seatNo</td><td>String</td><td>车厢号、座位号</td></tr>
+<tr><td>passengerName</td><td>String</td><td>乘车人</td></tr>
+<tr><td>status</td><td>TicketStatus</td><td>待支付/已支付/已退票/已取消</td></tr>
+</tbody>
+</table>
+<p>这些字段几乎可以直接映射成第2章的 <code>ticket_order</code> 表（规划名 <code>order</code>，因 <code>order</code> 是 MySQL 保留字改用 <code>ticket_order</code>），第4章下单流程也只是给它补上支付时间、锁单超时等字段。</p>
+<hr />
+<h2>1.4 集合框架：List / Map / Set</h2>
+<h3>1.4.1 三者对比</h3>
+<table>
+<thead>
+<tr><th>接口</th><th>特点</th><th>是否允许重复</th><th>是否有顺序</th><th>本项目用途</th></tr>
+</thead>
+<tbody>
+<tr><td>List</td><td>有序、可按下标访问</td><td>允许</td><td>有</td><td>车次列表、经停站序列</td></tr>
+<tr><td>Set</td><td>不重复</td><td>不允许</td><td>视实现而定</td><td>站名集合、去重</td></tr>
+<tr><td>Map</td><td>键值对，按键查找</td><td>键唯一</td><td>视实现而定</td><td>站名 → Station 索引</td></tr>
+</tbody>
+</table>
+<h3>1.4.2 实际代码中的用法</h3>
+<p><code>TrainQueryService</code> 同时用到了三种集合：</p>
+<pre><code class="language-java">private final List&lt;Train&gt; trains;
+private final Map&lt;String, Station&gt; stationIndex;
+
+public TrainQueryService(List&lt;Station&gt; stations, List&lt;Train&gt; trains) {
+    this.trains = new ArrayList&lt;&gt;(trains);
+    this.trains.sort(Comparator.comparing(Train::getDepartureTime));
+    this.stationIndex = new LinkedHashMap&lt;&gt;();
+    for (Station station : stations) {
+        this.stationIndex.put(station.getStationName(), station);
+    }
+}
+
+public Optional&lt;Station&gt; findStation(String stationName) {
+    return Optional.ofNullable(stationIndex.get(stationName));
+}
+
+public Set&lt;String&gt; stationNames() {
+    return Collections.unmodifiableSet(stationIndex.keySet());
+}</code></pre>
+<ul>
+<li><strong>Map 用于车站索引</strong>：查站是 O(1)，比遍历 List 快得多；用 <code>LinkedHashMap</code> 让站名按录入顺序输出；</li>
+<li><strong>List 用于车次列表</strong>：需要顺序、需要排序（按发车时间）；</li>
+<li><strong>Set 包裹 <code>keySet()</code></strong>：对外暴露站名集合，加 <code>unmodifiable</code> 防止外部乱改。</li>
+</ul>
+<h3>1.4.3 常用实现选型</h3>
+<table>
+<thead>
+<tr><th>需求</th><th>推荐实现</th><th>原因</th></tr>
+</thead>
+<tbody>
+<tr><td>频繁按下标读、尾部追加</td><td>ArrayList</td><td>数组结构，随机访问快</td></tr>
+<tr><td>频繁头尾插入删除</td><td>LinkedList</td><td>链表结构，增删快（本项目暂不需要）</td></tr>
+<tr><td>按键快速查找</td><td>HashMap</td><td>哈希表，平均 O(1)</td></tr>
+<tr><td>需要键有序</td><td>TreeMap</td><td>红黑树，按 key 排序，O(log n)</td></tr>
+<tr><td>需要保持插入顺序</td><td>LinkedHashMap</td><td>哈希表 + 链表</td></tr>
+<tr><td>去重且保持顺序</td><td>LinkedHashSet</td><td>哈希 + 链表</td></tr>
+</tbody>
+</table>
+<h3>1.4.4 查询算法与复杂度</h3>
+<pre><code class="language-java">public List&lt;Train&gt; query(String from, String to) {
+    List&lt;Train&gt; matched = new ArrayList&lt;&gt;();
+    for (Train train : trains) {
+        int fromIndex = train.getStopStations().indexOf(from);
+        int toIndex = train.getStopStations().indexOf(to);
+        if (fromIndex &gt;= 0 &amp;&amp; toIndex &gt;= 0 &amp;&amp; fromIndex &lt; toIndex) {
+            matched.add(train);
+        }
+    }
+    return matched;
+}</code></pre>
+<ul>
+<li>每趟车做两次 <code>indexOf</code>，是 O(m)（m 为经停站数），整体 O(n×m)；</li>
+<li>本章数据量小，够用；第3章换成 SQL + 索引，第5章换成图算法，不在这里过度优化；</li>
+<li><strong>排错提示</strong>：如果查询结果为空，先打印 <code>train.getStopStations()</code>，确认站名是否与索引里完全一致（"北京南"和"北京"是两个站）。</li>
+</ul>
+<hr />
+<h2>1.5 异常处理</h2>
+<h3>1.5.1 异常分类</h3>
+<table>
+<thead>
+<tr><th>类别</th><th>代表</th><th>是否必须处理</th><th>使用场景</th></tr>
+</thead>
+<tbody>
+<tr><td>受检异常（Checked）</td><td>IOException、SQLException</td><td>必须 try 或 throws</td><td>外部资源、可恢复问题</td></tr>
+<tr><td>运行时异常（Unchecked）</td><td>NullPointerException、IllegalArgumentException</td><td>不强制</td><td>参数错误、编程错误</td></tr>
+<tr><td>自定义异常</td><td>StationNotFoundException</td><td>继承运行时异常更省事</td><td>业务规则失败</td></tr>
+</tbody>
+</table>
+<h3>1.5.2 自定义业务异常</h3>
+<pre><code class="language-java">public class StationNotFoundException extends RuntimeException {
+
+    public StationNotFoundException(String stationName) {
+        super("未找到车站：" + stationName);
+    }
+}</code></pre>
+<p>为什么继承 <code>RuntimeException</code> 而不是 <code>Exception</code>？因为"输入了不存在的车站"是调用方的参数问题，不需要强制上层每处都写 try；控制台入口统一捕获即可，将来 Spring Boot 里则用 <code>@RestControllerAdvice</code> 统一处理。</p>
+<h3>1.5.3 Optional + 自定义异常配合</h3>
+<pre><code class="language-java">Station fromStation = service.findStation(from)
+        .orElseThrow(() -&gt; new StationNotFoundException(from));</code></pre>
+<p><code>findStation</code> 返回 <code>Optional&lt;Station&gt;</code> 表达"可能查不到"，<code>orElseThrow</code> 在空值时抛出业务异常，避免返回 null 后到处判空。</p>
+<h3>1.5.4 try-with-resources 自动关资源</h3>
+<pre><code class="language-java">try (Scanner scanner = new Scanner(System.in)) {
+    while (scanner.hasNextLine()) {
+        // ...
+    }
+}</code></pre>
+<p><code>Scanner</code> 实现了 <code>AutoCloseable</code>，放在 try 的括号里，无论正常结束还是异常退出都会自动关闭，等价于手写 <code>finally { scanner.close(); }</code>，但更简洁。</p>
+<h3>1.5.5 控制台如何统一兜底</h3>
+<pre><code class="language-java">try {
+    // 查询与打印
+} catch (StationNotFoundException | IllegalArgumentException e) {
+    System.out.println("查询失败：" + e.getMessage());
+}</code></pre>
+<p>两个异常合并捕获，只给用户一句友好提示，不让堆栈糊满屏幕。程序不退出，用户可以继续输入。</p>
+<hr />
+<h2>1.6 Maven 依赖管理</h2>
+<h3>1.6.1 本章 pom 现状</h3>
+<pre><code class="language-xml">&lt;parent&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
+    &lt;version&gt;3.5.16&lt;/version&gt;
+&lt;/parent&gt;
+
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+        &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;
+        &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+<p>父工程负责<strong>版本仲裁</strong>：spring-web、jackson、tomcat 等几十个传递依赖的版本都不用我们写。</p>
+<h3>1.6.2 传递依赖</h3>
+<pre><code>spring-boot-starter-web
+├── spring-boot-starter          （核心自动配置）
+├── spring-boot-starter-json     （JSON 序列化）
+├── spring-boot-starter-tomcat   （内嵌容器）
+└── spring-webmvc                （MVC）</code></pre>
+<p><code>mvn dependency:tree</code> 可以看到完整依赖树（第0章学过，本章动手看一眼）。</p>
+<h3>1.6.3 依赖冲突与调解规则</h3>
+<p>当两条依赖链引入同一个 artifact 的不同版本时，Maven 按以下规则选一个：</p>
+<ol>
+<li><strong>最短路径优先</strong>：离本工程层级少的版本胜出；</li>
+<li><strong>路径相同看声明顺序</strong>：先声明的胜出。</li>
+</ol>
+<p>排查命令：</p>
+<pre><code class="language-bash">mvn dependency:tree -Dincludes=com.fasterxml.jackson.core:jackson-databind</code></pre>
+<h3>1.6.4 排除传递依赖</h3>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+    &lt;exclusions&gt;
+        &lt;exclusion&gt;
+            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-boot-starter-logging&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+    &lt;/exclusions&gt;
+&lt;/dependency&gt;</code></pre>
+<p>排除后通常会补一个想要替代的依赖（例如换成 log4j2 starter），否则可能缺日志实现。</p>
+<h3>1.6.5 dependencyManagement 与 BOM</h3>
+<p>父工程用 <code>&lt;dependencyManagement&gt;</code> 统一声明版本，子工程引用时<strong>不写版本号</strong>：</p>
+<pre><code class="language-xml">&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;com.railway&lt;/groupId&gt;
+            &lt;artifactId&gt;railway-common&lt;/artifactId&gt;
+            &lt;version&gt;${project.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</code></pre>
+<p>以后项目拆多模块时（如 <code>railway-ai</code>、<code>railway-common</code>），这一条是基础。</p>
+<h3>1.6.6 本章踩坑：多个 main 方法</h3>
+<p>本章新增了 <code>ConsoleTrainQuery</code>，它也有 <code>main</code> 方法。Spring Boot 插件打包时会<strong>找不到唯一的主类</strong>，于是我们显式指定：</p>
+<pre><code class="language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;mainClass&gt;com.railway.RailwayApplication&lt;/mainClass&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</code></pre>
+<p>控制台类仍然可以用 <code>java -cp target/classes</code> 直接运行，两者互不干扰。</p>
+<hr />
+<h2>1.7 运行与验收</h2>
+<h3>1.7.1 控制台运行方式</h3>
+<p>交互模式（无参数运行，输入 <code>出发站 到达站</code>，输入 <code>exit</code> 退出）：</p>
+<pre><code class="language-bash">mvnw.cmd compile
+java -cp target/classes com.railway.console.ConsoleTrainQuery</code></pre>
+<p>传参模式（适合快速验证）：</p>
+<pre><code class="language-bash">java -cp target/classes com.railway.console.ConsoleTrainQuery 北京南 南京南
+java -cp target/classes com.railway.console.ConsoleTrainQuery 北京南 深圳北
+java -cp target/classes com.railway.console.ConsoleTrainQuery 广州南 武汉</code></pre>
+<h3>1.7.2 预期输出示例</h3>
+<pre><code class="language-text">出发站：北京南（北京局集团，特等站，北京动车段）
+到达站：南京南（上海局集团，特等站，南京动车段）
+匹配车次（北京南 → 南京南）共 2 趟：
+G11    高速动车组  下行   发 08:00 到 12:48  1480km  288分钟  担当：北京局集团  系统：车辆
+       经停：北京南 &gt; 济南西 &gt; 南京南 &gt; 杭州东
+G1     高速动车组  下行   发 09:00 到 13:28  1318km  268分钟  担当：上海局集团  系统：车辆
+       经停：北京南 &gt; 济南西 &gt; 南京南 &gt; 上海虹桥</code></pre>
+<h3>1.7.3 验收清单</h3>
+<ul>
+<li>✅ 输入出发站、到达站，控制台打印匹配车次（按发车时间排序）</li>
+<li>✅ 实体类包含车次等级、上下行、所属路局、系统分类等字段</li>
+<li>✅ Map 用于车站索引、List 用于车次列表、Set 对外暴露站名</li>
+<li>✅ 不存在的车站给出友好错误提示</li>
+<li>✅ Spring Boot 项目与 <code>/hello</code> 接口不受影响</li>
+</ul>
+<hr />
+<h2>1.8 自检三问</h2>
+<ol>
+<li><strong>封装</strong>：为什么实体字段用 private + getter/setter，而不是 public？</li>
+</ol>
+<p>答：可以加校验、改内部实现不影响外部、便于框架映射。</p>
+<ol>
+<li><strong>集合</strong>：查询车次为什么用 List 存车次、Map 存车站？</li>
+</ol>
+<p>答：车次需要顺序和排序；车站需要按名快速查找，Map 是 O(1)。</p>
+<ol>
+<li><strong>排错</strong>：控制台查询没结果时先查什么？</li>
+</ol>
+<p>答：先确认站名拼写与索引一致，再打印经停站列表核对站序（fromIndex &lt; toIndex）。</p>
+<hr />
+<h2>1.9 下一章预告</h2>
+<p><strong>第2章 MySQL 数据库设计与 SQL 实战</strong>：把本章四个实体落成七张表，<code>seat_inventory</code> 用"车次 + 区段"实现席位复用，用 <code>EXPLAIN</code> 学会加索引。本章的 <code>stopStations</code> 序列将变成 <code>train_station</code> 经停表。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-01.html</span>
+  <span>第1章 Java核心基础与实体建模</span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.railway.mapper.TicketOrderMapper">
+
+    <resultMap id="TicketOrderMap" type="TicketOrder">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="train_id" property="trainId"/>
+        <result column="travel_date" property="travelDate"/>
+        <result column="from_station_id" property="fromStationId"/>
+        <result column="to_station_id" property="toStationId"/>
+        <result column="from_station_order" property="fromStationOrder"/>
+        <result column="to_station_order" property="toStationOrder"/>
+        <result column="seat_type" property="seatType"/>
+        <result column="carriage_no" property="carriageNo"/>
+        <result column="seat_no" property="seatNo"/>
+        <result column="passenger_name" property="passengerName"/>
+        <result column="passenger_id_card" property="passengerIdCard"/>
+        <result column="price" property="price"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="paid_at" property="paidAt"/>
+        <result column="expire_at" property="expireAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="TicketOrder" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ticket_order (order_no, user_id, train_id, travel_date,
+                                  from_station_id, to_station_id,
+                                  from_station_order, to_station_order,
+                                  seat_type, carriage_no, seat_no,
+                                  passenger_name, passenger_id_card,
+                                  price, status, created_at, expire_at)
+        VALUES (#{orderNo}, #{userId}, #{trainId}, #{travelDate},
+                #{fromStationId}, #{toStationId},
+                #{fromStationOrder}, #{toStationOrder},
+                #{seatType}, #{carriageNo}, #{seatNo},
+                #{passengerName}, #{passengerIdCard},
+                #{price}, #{status}, NOW(), #{expireAt})
+    </insert>
+
+    <select id="selectByOrderNo" resultMap="TicketOrderMap">
+        SELECT id, order_no, user_id, train_id, travel_date,
+               from_station_id, to_station_id,
+               from_station_order, to_station_order,
+               seat_type, carriage_no, seat_no,
+               passenger_name, passenger_id_card,
+               price, status, created_at, paid_at, expire_at
+        FROM ticket_order
+        WHERE order_no = #{orderNo}
+    </select>
+</mapper>

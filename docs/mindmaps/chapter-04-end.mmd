@@ -1,0 +1,49 @@
+mindmap
+  root((第4章 复盘 ✅))
+    已掌握
+      Java并发L4
+        线程池七参数与拒绝策略
+        synchronized锁升级
+        ReentrantLock与AQS ⭐
+        CAS与原子类
+        ConcurrentHashMap
+        i++不安全与丢失更新 🔥
+      Redis L4
+        五大数据结构与选型
+        过期策略与内存淘汰
+        穿透击穿雪崩 🔥
+        SETNX到Redisson演进
+        锁过期误删续期 ⭐🔥
+        Lua原子扣减 ⭐
+      MQ削峰L3
+        有界队列削峰
+        虚拟排队位次
+        幂等补偿与最终一致
+    已产出
+      分布式锁双实现 📦
+      Redis Lua库存扣减 📦
+      POST /api/order/grab 📦
+      GrabQueue内存MQ 📦
+      GrabController七个接口 📦
+      12个JUnit并发测试 📦
+      PowerShell压测脚本 📦
+      学习材料与打印HTML 📦
+    验收结果
+      100并发抢10票恰好10订单 ✅
+      同步与异步双模式均通过 ✅
+      HTTP压测订单10剩余0 ✅
+      JUnit12用例全绿 ✅
+      无锁实验复现丢失更新 ✅
+    踩坑记录
+      内存锁移除竞态已修复 🧠
+      压测reset误用GET已修复 🧠
+      PS5.1需UTF-8 BOM 🧠
+      无Redis环境双轨验证 🧠
+    待复习
+      Redisson看门狗源码
+      RocketMQ事务消息回查
+      Redis集群与哨兵 L2
+    下一章衔接
+      第5章 换乘路径规划
+      Dijkstra与时间扩展图
+      广州南站规则引擎

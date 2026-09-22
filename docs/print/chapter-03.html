@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 MyBatis与Spring Boot整合 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第3章 MyBatis与Spring Boot整合"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第3章 MyBatis与Spring Boot整合</span>
+</header>
+<main class="chapter">
+<h1>第3章 MyBatis与Spring Boot整合</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第3-4周后段，约3-4天<br />
+深度：MyBatis L3（会用 Mapper、动态 SQL、ResultMap）；Spring 事务 L4（原理、传播行为、失效场景必须讲清楚）<br />
+一句话：把第2章的 SQL 装进 Mapper XML，通过 REST 返回车次列表，并用 <code>@Transactional</code> 守住"下单扣库存要么全成、要么全滚"。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-03-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-03-start.mmd -o docs/print/assets/chapter-03-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第3章 MyBatis整合 🔄</strong><ul><li>本章目标<ul><li>MyBatis整合到REST接口 L3</li><li>Spring事务原理与失效场景 L4</li><li>车次查询接口 📦</li><li>下单扣库存事务 📦</li></ul></li><li>核心知识点<ul><li>MyBatis L3<ul><li>Mapper接口与XML</li><li>参数绑定 #{}与${}</li><li>动态SQL if where foreach</li><li>ResultMap与列映射</li></ul></li><li>Spring Boot自动配置<ul><li>starter与依赖引入</li><li>SqlSessionFactory自动装配</li><li>mapper-locations与别名</li></ul></li><li>Spring事务 L4<ul><li>@Transactional代理原理</li><li>传播行为七种</li><li>失效场景八类 🧠</li><li>隔离级别与回滚规则</li><li>下单扣库存防超卖 ⭐🔥</li></ul></li></ul></li><li>代码产出<ul><li>application.yml数据源配置 📦</li><li>TrainMapper动态SQL 📦</li><li>GET /api/trains车次查询 📦</li><li>POST /api/orders事务下单 📦</li><li>API设计文档 📦</li></ul></li><li>验收标准<ul><li>curl返回车次列表 🎯</li><li>扣库存与订单同成败 🎯</li><li>人为异常两步都回滚 🎯</li><li>解释@Transactional失效 🎯</li></ul></li><li>与前后章关联<ul><li>承 第2章七张表与SQL</li><li>启 第4章并发与分布式锁</li></ul></li><li>预计耗时<ul><li>第3-4周后段</li><li>约3-4天</li></ul></li><li>重点难点<ul><li>动态SQL拼装 ⭐</li><li>事务回滚验证 ⭐</li><li>自调用与private方法失效 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>MyBatis 整合</td><td>starter 依赖 + <code>application.yml</code> 数据源/MyBatis 配置</td><td>应用启动，Mapper 注入成功</td></tr>
+<tr><td>车次查询接口</td><td><code>GET /api/trains?from=&amp;to=&amp;date=</code></td><td>curl 从 MySQL 返回车次列表</td></tr>
+<tr><td>动态 SQL</td><td><code>TrainMapper.xml</code> 按条件拼装</td><td>带/不带 trainType 返回结果不同</td></tr>
+<tr><td>ResultMap</td><td>Station/SeatInventory/TicketOrder 显式映射</td><td>列名与字段不同也能正确映射</td></tr>
+<tr><td>Spring 事务 L4</td><td><code>OrderService.createOrder</code> 下单扣库存</td><td>人为异常时扣减与订单同时回滚</td></tr>
+<tr><td>统一返回结构</td><td><code>ApiResponse</code> + 全局异常处理</td><td>成功 code=0，失败返回业务错误码</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>开头导图：<code>docs/mindmaps/chapter-03-start.mmd</code></li>
+<li>数据源与 MyBatis 配置：<code>src/main/resources/application.yml</code></li>
+<li>Mapper XML：<code>src/main/resources/mapper/</code></li>
+<li>上一章表结构与 SQL：<code>sql/init.sql</code>、<code>docs/architecture/01-database-design.md</code></li>
+</ul>
+<hr />
+<h2>3.0 实验环境</h2>
+<p>前置条件：MySQL 已导入 <code>sql/init.sql</code>，<code>railway</code> 库存在（station 13 行、train 9 行、train_station 33 行、seat_inventory 947 行）。</p>
+<p>启动应用：</p>
+<pre><code class="language-bash">mvnw.cmd spring-boot:run        # Windows
+./mvnw spring-boot:run          # Linux / macOS
+java -jar target/railway-12306-0.0.1-SNAPSHOT.jar</code></pre>
+<p>验证接口（本章验收命令）：</p>
+<pre><code class="language-bash">curl "http://localhost:8080/api/trains?from=北京南&amp;to=上海虹桥&amp;date=2026-04-15"</code></pre>
+<hr />
+<h2>3.1 Spring Boot 自动配置：为什么只加依赖就能用</h2>
+<h3>3.1.1 是什么</h3>
+<p><code>@SpringBootApplication</code> 是一个组合注解：</p>
+<table>
+<thead>
+<tr><th>注解</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>@SpringBootConfiguration</code></td><td>声明配置类（本质是 <code>@Configuration</code>）</td></tr>
+<tr><td><code>@ComponentScan</code></td><td>扫描当前包及子包的 Bean</td></tr>
+<tr><td><code>@EnableAutoConfiguration</code></td><td>读取自动配置类，按条件生效</td></tr>
+</tbody>
+</table>
+<p><code>@EnableAutoConfiguration</code> 通过 <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> 找到候选配置类，再用 <code>@ConditionalOnClass</code>、<code>@ConditionalOnMissingBean</code>、<code>@ConditionalOnProperty</code> 等条件决定装不装。</p>
+<p>MyBatis 的自动配置来自 <code>mybatis-spring-boot-starter</code>：</p>
+<pre><code class="language-text">mybatis-spring-boot-starter
+  └── mybatis-spring-boot-autoconfigure
+        └── MybatisAutoConfiguration
+              ├── @ConditionalOnSingleCandidate(DataSource.class)  有数据源才生效
+              ├── 创建 SqlSessionFactory（吃 application.yml 的 mybatis.*）
+              ├── 创建 SqlSessionTemplate
+              └── AutoConfiguredMapperScannerRegistrar 扫描 @Mapper 接口</code></pre>
+<p><strong>为什么</strong>：starter = 依赖聚合 + 自动配置。省掉手写 <code>SqlSessionFactoryBean</code>、<code>MapperScannerConfigurer</code> 的 XML 配置，这是 Spring Boot "约定优于配置"的体现。</p>
+<p><strong>怎么排错</strong>：</p>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>启动报 <code>Failed to configure a DataSource</code></td><td>没配 url 或依赖缺失</td><td>检查 <code>spring.datasource</code> 与 mysql 驱动</td></tr>
+<tr><td>Mapper 注入报 <code>NoSuchBeanDefinitionException</code></td><td>接口没被扫描</td><td>加 <code>@Mapper</code> 或 <code>@MapperScan("com.railway.mapper")</code></td></tr>
+<tr><td>启动报 <code>Invalid bound statement (not found)</code></td><td>XML 没被加载或 namespace 写错</td><td>检查 <code>mapper-locations</code> 与 namespace</td></tr>
+</tbody>
+</table>
+<h3>3.1.2 本项目配置逐项解读</h3>
+<p><code>src/main/resources/application.yml</code>：</p>
+<pre><code class="language-yaml">spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/railway?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10         # 连接池上限，按并发调整
+      minimum-idle: 2
+      connection-timeout: 3000      # 获取连接超时 3s，快速失败
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml   # XML 位置
+  type-aliases-package: com.railway.entity   # XML 里可直接写 Train 而非全限定名
+  configuration:
+    map-underscore-to-camel-case: true       # train_no → trainNo 自动映射
+    default-fetch-size: 100
+    default-statement-timeout: 30            # 单条 SQL 30s 超时</code></pre>
+<p>要点：</p>
+<ul>
+<li><code>serverTimezone=Asia/Shanghai</code> 保证 <code>LocalDate/LocalTime</code> 读写无时区偏移；</li>
+<li><code>${DB_PASSWORD:}</code> 表示取环境变量，取不到用空串，避免把密码提交进 Git；</li>
+<li><code>map-underscore-to-camel-case</code> 能省掉简单映射，但列名与属性名差异大时仍推荐显式 <code>ResultMap</code>（见 3.3）。</li>
+</ul>
+<hr />
+<h2>3.2 Mapper 接口与 XML：绑定规则与参数传递</h2>
+<h3>3.2.1 是什么</h3>
+<p>MyBatis 的 Mapper 由两部分组成：</p>
+<ul>
+<li>Java 接口：定义方法（编译期类型安全）；</li>
+<li>XML（或注解）：写 SQL，通过 <code>namespace + id</code> 与接口方法绑定。</li>
+</ul>
+<p>本项目统一用 XML，接口只留一行 <code>@Mapper</code>：</p>
+<pre><code class="language-java">@Mapper
+public interface StationMapper {
+    Station selectByName(String stationName);
+}</code></pre>
+<pre><code class="language-xml">&lt;mapper namespace="com.railway.mapper.StationMapper"&gt;
+    &lt;select id="selectByName" resultMap="StationMap"&gt;
+        SELECT id, station_code, station_name, city, bureau,
+               affiliated_depot, station_class, is_hub
+        FROM station
+        WHERE station_name = #{stationName}
+    &lt;/select&gt;
+&lt;/mapper&gt;</code></pre>
+<p>绑定规则（缺一不可）：</p>
+<ol>
+<li><code>namespace</code> = 接口全限定名；</li>
+<li>标签 <code>id</code> = 接口方法名；</li>
+<li><code>parameterType</code> 可省略，MyBatis 自动推断；<code>resultType</code> / <code>resultMap</code> 二选一；</li>
+<li>XML 位置要能被 <code>mapper-locations</code> 匹配到。</li>
+</ol>
+<h3>3.2.2 参数传递三种姿势</h3>
+<pre><code class="language-java">Station selectByName(String stationName);                       // 单参数：名字随意
+Train selectByTrainNo(@Param("trainNo") String trainNo);        // 多参数必须 @Param
+int insert(TicketOrder order);                                  // JavaBean：直接取属性</code></pre>
+<p>多参数不加 <code>@Param</code> 时，MyBatis 用 <code>arg0/arg1</code> 或 <code>param1/param2</code>，可读性差且易错，本项目一律显式 <code>@Param</code>。</p>
+<h3>3.2.3 <code>#{}</code> 与 <code>${}</code>：预编译与拼接</h3>
+<table>
+<thead>
+<tr><th>写法</th><th>底层</th><th>安全性</th><th>场景</th></tr>
+</thead>
+<tbody>
+<tr><td><code>#{name}</code></td><td>PreparedStatement 占位符 <code>?</code></td><td>防 SQL 注入</td><td>所有参数值</td></tr>
+<tr><td><code>${name}</code></td><td>字符串直接拼接</td><td>有注入风险</td><td>表名/列名等 SQL 结构，且必须白名单校验</td></tr>
+</tbody>
+</table>
+<pre><code class="language-xml">&lt;!-- 正确：值用 #{} --&gt;
+WHERE station_name = #{stationName}
+
+&lt;!-- 危险：排序字段用 ${}，若前端传入 "id; DROP TABLE ..." 就出事 --&gt;
+ORDER BY ${sortColumn}</code></pre>
+<h3>3.2.4 怎么排错</h3>
+<table>
+<thead>
+<tr><th>报错</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Invalid bound statement (not found)</code></td><td>namespace/id 与接口对不上，或 XML 未加载</td><td>核对全限定名；查 <code>mapper-locations</code></td></tr>
+<tr><td><code>BindingException: Parameter 'xxx' not found</code></td><td>多参数没加 <code>@Param</code></td><td>补注解</td></tr>
+<tr><td><code>TooManyResultsException</code></td><td>期望一条却返回多条</td><td>检查唯一条件，或返回 <code>List</code></td></tr>
+<tr><td>查出来字段全 null</td><td>列名与属性不匹配</td><td>开驼峰映射或写 ResultMap</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>3.3 ResultMap：显式映射与复杂结果</h2>
+<h3>3.3.1 是什么</h3>
+<p><code>ResultMap</code> 描述"数据库列 → Java 属性"的映射规则：</p>
+<pre><code class="language-xml">&lt;resultMap id="StationMap" type="Station"&gt;
+    &lt;id column="id" property="id"/&gt;
+    &lt;result column="station_code" property="stationCode"/&gt;
+    &lt;result column="is_hub" property="hub"/&gt;
+    &lt;!-- 其余 column 与 property 一一对应 --&gt;
+&lt;/resultMap&gt;</code></pre>
+<ul>
+<li><code>&lt;id&gt;</code> 标识主键，MyBatis 用它做行唯一性判断（嵌套映射时尤其重要）；</li>
+<li>没写到的列，若开了 <code>map-underscore-to-camel-case</code> 仍会自动映射；</li>
+<li>复杂场景用 <code>&lt;association&gt;</code>（一对一）和 <code>&lt;collection&gt;</code>（一对多）把 JOIN 结果折叠成对象图。例如"查车次带全部经停站"就适合 <code>&lt;collection&gt;</code>；本项目车次查询按扁平 VO 返回，暂不需要。</li>
+</ul>
+<h3>3.3.2 本项目的三个 ResultMap</h3>
+<table>
+<thead>
+<tr><th>文件</th><th>ResultMap</th><th>为什么显式写</th></tr>
+</thead>
+<tbody>
+<tr><td><code>StationMapper.xml</code></td><td><code>StationMap</code></td><td><code>is_hub → hub</code> 无法靠驼峰规则映射</td></tr>
+<tr><td><code>SeatInventoryMapper.xml</code></td><td><code>SeatInventoryMap</code></td><td>库存表列多，显式映射避免字段名歧义</td></tr>
+<tr><td><code>TicketOrderMapper.xml</code></td><td><code>TicketOrderMap</code></td><td>订单表列多且含时间字段，适合统一维护</td></tr>
+</tbody>
+</table>
+<p>枚举映射：<code>TicketOrderMapper.insert</code> 传入的 <code>status</code> 是 <code>TicketStatus</code> 枚举，MyBatis 默认 <code>EnumTypeHandler</code> 写库时存 <code>name()</code>（如 <code>PENDING_PAYMENT</code>），正好对上表里的 <code>ENUM('PENDING_PAYMENT', ...)</code>。</p>
+<h3>3.3.3 怎么排错</h3>
+<ul>
+<li>某个字段为 null：先看 <code>SELECT</code> 有没有查该列，再核对 ResultMap 的 column/property；</li>
+<li>集合为空：<code>&lt;collection&gt;</code> 的 <code>ofType</code> 写没写、<code>&lt;id&gt;</code> 有没有配；</li>
+<li>性能问题：<code>ResultMap</code> 的嵌套 select（N+1 查询）优先改成 JOIN + collection。</li>
+</ul>
+<hr />
+<h2>3.4 动态 SQL：一套 XML 应对多条件</h2>
+<h3>3.4.1 是什么</h3>
+<p>MyBatis 用标签在 XML 里拼 SQL，常用：</p>
+<table>
+<thead>
+<tr><th>标签</th><th>作用</th><th>本项目/示例</th></tr>
+</thead>
+<tbody>
+<tr><td><code>&lt;if&gt;</code></td><td>条件成立才拼</td><td>车次类型筛选（TrainMapper）</td></tr>
+<tr><td><code>&lt;where&gt;</code></td><td>自动去掉开头 AND/OR</td><td><code>WHERE 1=1</code> 的优雅替代</td></tr>
+<tr><td><code>&lt;set&gt;</code></td><td>UPDATE 自动去尾逗号</td><td>动态更新库存/订单</td></tr>
+<tr><td><code>&lt;foreach&gt;</code></td><td>遍历集合，拼 IN / 批量 VALUES</td><td>批量插入经停站</td></tr>
+<tr><td><code>&lt;choose&gt;/&lt;when&gt;/&lt;otherwise&gt;</code></td><td>多选一</td><td>按不同维度排序</td></tr>
+</tbody>
+</table>
+<h3>3.4.2 本项目实例：按车次类型筛选</h3>
+<p><code>TrainMapper.xml</code>：</p>
+<pre><code class="language-xml">&lt;if test="trainType != null and trainType != ''"&gt;
+    AND t.train_type = #{trainType}
+&lt;/if&gt;</code></pre>
+<ul>
+<li><code>from/to/date</code> 是必填条件，不参与动态；</li>
+<li><code>trainType</code> 可选：不传时 SQL 里就没有这个 AND，返回全部等级；传 <code>G</code> 只返回高铁；</li>
+<li><code>test</code> 里判空写法不能省，否则 null 会拼出 <code>AND t.train_type = null</code>。</li>
+</ul>
+<p>教学示例（本项目后续批量扣减的优化方向）：</p>
+<pre><code class="language-xml">UPDATE seat_inventory
+&lt;set&gt;
+    remaining_count = remaining_count - 1,
+    version = version + 1,
+&lt;/set&gt;
+WHERE id IN
+&lt;foreach collection="ids" item="id" open="(" separator="," close=")"&gt;
+    #{id}
+&lt;/foreach&gt;</code></pre>
+<p>注意 <code>&lt;set&gt;</code> 会自动去掉最后多余逗号；本项目当前扣减用范围条件一次 UPDATE，不需要 <code>foreach</code>，但面试常问，必须看懂。</p>
+<h3>3.4.3 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>多出 <code>AND</code> 导致语法错误</td><td>手写 <code>WHERE</code> + <code>&lt;if&gt;</code> 没配 <code>&lt;where&gt;</code></td><td>把 WHERE 换成 <code>&lt;where&gt;</code></td></tr>
+<tr><td><code>test</code> 判断失效</td><td>OGNL 表达式写错</td><td>字符串判空写 <code>!= null and != ''</code></td></tr>
+<tr><td>集合参数报 <code>Parameter 'ids' not found</code></td><td>没加 <code>@Param("ids")</code></td><td>interface 补注解</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>3.5 实战：车次查询接口 <code>GET /api/trains</code></h2>
+<h3>3.5.1 请求与响应约定</h3>
+<pre><code class="language-text">GET /api/trains?from=北京南&amp;to=上海虹桥&amp;date=2026-04-15[&amp;seatType=二等座][&amp;trainType=G]</code></pre>
+<ul>
+<li><code>from</code>、<code>to</code>、<code>date</code> 必填；</li>
+<li><code>seatType</code> 默认二等座（本项目第2章库存以二等座为主要样例）；</li>
+<li><code>trainType</code> 可选，对应 3.4 的动态 SQL。</li>
+</ul>
+<h3>3.5.2 调用链</h3>
+<pre><code class="language-text">TrainController.queryTrains                     ← 收参、ISO 日期转换
+  └─ TrainService.queryTrains                   ← 参数校验、站名存在性校验
+       ├─ StationMapper.selectByName(from/to)   ← 校验出发/到达站
+       └─ TrainMapper.queryTrains(...)          ← 动态 SQL 查询
+            └─ MySQL: train + train_station 两次 JOIN + 库存子查询</code></pre>
+<p><code>TrainService</code> 的三层校验：必填参数 → 出发到达不相同 → 两站都存在（否则抛 <code>BusinessException</code>，由全局异常处理器转成统一 JSON）。</p>
+<h3>3.5.3 SQL 逐段解析</h3>
+<pre><code class="language-sql">SELECT t.id, t.train_no, ..., fs.station_name AS from_station, ts.station_name AS to_station,
+       tfs.departure_time, tts.arrival_time,
+       FLOOR((tts.day_offset * 1440 + TIME_TO_SEC(tts.arrival_time) / 60)
+                 - (tfs.day_offset * 1440 + TIME_TO_SEC(tfs.departure_time) / 60)) AS duration_minutes,
+       (tts.mileage_from_start - tfs.mileage_from_start) AS mileage,
+       (SELECT MIN(i.remaining_count)
+        FROM seat_inventory i
+        WHERE i.train_id = t.id AND i.travel_date = #{travelDate} AND i.seat_type = #{seatType}
+          AND i.from_station_order &gt;= tfs.station_order
+          AND i.to_station_order &lt;= tts.station_order) AS remaining_count,
+       (SELECT SUM(i.price)
+        FROM seat_inventory i
+        WHERE i.train_id = t.id AND i.travel_date = #{travelDate} AND i.seat_type = #{seatType}
+          AND i.from_station_order &gt;= tfs.station_order
+          AND i.to_station_order &lt;= tts.station_order) AS total_price
+FROM train t
+         JOIN train_station tfs ON tfs.train_id = t.id    -- 出发站经停记录
+         JOIN station fs ON fs.id = tfs.station_id
+         JOIN train_station tts ON tts.train_id = t.id    -- 到达站经停记录
+         JOIN station ts ON ts.id = tts.station_id
+WHERE fs.station_name = #{from}
+  AND ts.station_name = #{to}
+  AND tfs.station_order &lt; tts.station_order               -- 保证方向正确
+  AND t.status = 1
+ORDER BY tfs.departure_time</code></pre>
+<p>四个关键点：</p>
+<ol>
+<li><strong>同表两次 JOIN</strong>：<code>train_station</code> 起别名 <code>tfs</code>（from）和 <code>tts</code>（to），分别接两个 <code>station</code>，这是"按 O-D 查经停车次"的标准写法；</li>
+<li><strong><code>tfs.station_order &lt; tts.station_order</code></strong>：防止把反方向的车次也查出来；</li>
+<li><strong>余票 <code>MIN</code></strong>：严格复用第2章的席位复用模型——整个乘车区间拆成若干原子区段，区间余票 = 各段最小值，瓶颈段决定能卖几张；</li>
+<li><strong>票价 <code>SUM</code></strong>：各原子区段票价相加，与数据库设计中 <code>seat_inventory.price</code> 的区段定价一致；<code>day_offset</code> 处理跨天车次，避免出现负的历时。</li>
+</ol>
+<p>对应索引：<code>seat_inventory.uk_segment</code> 覆盖余票子查询全部条件（第2章 EXPLAIN 实测 <code>type=range</code>、<code>key=uk_segment</code>、只扫 3 行）。</p>
+<h3>3.5.4 实测结果</h3>
+<pre><code class="language-bash">curl "http://localhost:8080/api/trains?from=北京南&amp;to=上海虹桥&amp;date=2026-04-15"</code></pre>
+<pre><code class="language-json">{
+  "code": 0,
+  "message": "成功",
+  "data": [
+    {
+      "trainId": 1,
+      "trainNo": "G1",
+      "trainType": "G",
+      "trainTypeName": "高速动车组",
+      "direction": "DOWN",
+      "directionName": "下行",
+      "bureau": "上海局集团",
+      "fromStation": "北京南",
+      "toStation": "上海虹桥",
+      "departureTime": "09:00:00",
+      "arrivalTime": "13:28:00",
+      "durationMinutes": 268,
+      "mileage": 1318,
+      "seatType": "二等座",
+      "remainingCount": 3,
+      "totalPrice": 716.5
+    }
+  ],
+  "timestamp": 1789399182922
+}</code></pre>
+<ul>
+<li>返回 1 趟 G1：09:00 北京南发车，13:28 到上海虹桥，全程 4 小时 28 分；</li>
+<li><code>remainingCount=3</code> 与第2章 SQL 实测一致（瓶颈区段济南西→南京南）；</li>
+<li><code>trainTypeName/directionName</code> 是 Service 层由枚举翻译的中文名，接口不暴露魔法值。</li>
+</ul>
+<p>错误场景（统一由 <code>GlobalExceptionHandler</code> 返回）：</p>
+<table>
+<thead>
+<tr><th>请求</th><th>code</th><th>message</th></tr>
+</thead>
+<tbody>
+<tr><td><code>to=火星站</code></td><td>1001</td><td>到达站不存在：火星站</td></tr>
+<tr><td><code>from</code> 与 <code>to</code> 相同</td><td>400</td><td>出发站与到达站不能相同</td></tr>
+<tr><td>缺少 <code>date</code></td><td>400</td><td>参数错误：Required request parameter 'date' ...</td></tr>
+<tr><td><code>date=2026-13-99</code></td><td>400</td><td>参数错误：Failed to convert ... LocalDate</td></tr>
+<tr><td>body 非法 JSON</td><td>400</td><td>参数错误：JSON parse error ...</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>3.6 Spring 事务 L4：原理、传播行为、失效场景</h2>
+<h3>3.6.1 是什么：<code>@Transactional</code> 背后的代理链</h3>
+<p><code>@Transactional</code> 不是魔法，是三件事的组合：</p>
+<ol>
+<li><strong>AOP 代理</strong>：Spring 为标注了 <code>@Transactional</code> 的 Bean 创建代理（JDK 动态代理或 CGLIB）。调用方法时先经过 <code>TransactionInterceptor</code>；</li>
+<li><strong>事务管理器</strong>：<code>DataSourceTransactionManager</code> 负责从 <code>DataSource</code> 拿 <code>Connection</code>，<code>setAutoCommit(false)</code> 开启事务，方法正常返回则 <code>commit</code>，抛异常则 <code>rollback</code>；</li>
+<li><strong>事务同步</strong>：事务期间连接通过 <code>TransactionSynchronizationManager</code> 绑定到当前线程的 <code>ThreadLocal</code>，同一个事务内的所有 DAO 操作共用同一个连接。</li>
+</ol>
+<p>调用链：</p>
+<pre><code class="language-text">OrderController.createOrder
+  └─ [代理对象] OrderService.createOrder
+       └─ TransactionInterceptor.invoke
+            ├─ 开启事务（拿连接、绑 ThreadLocal）
+            ├─ 目标方法：select ... FOR UPDATE → 校验 → UPDATE → INSERT
+            └─ 提交 / 回滚（异常）</code></pre>
+<p><strong>为什么</strong>：业务代码里只写一个注解，不用手动 <code>commit/rollback</code>，也保证多步 SQL 原子性。<strong>代价</strong>：一旦绕开代理（见 3.6.4），注解就"失灵"。</p>
+<h3>3.6.2 传播行为七种</h3>
+<table>
+<thead>
+<tr><th>传播行为</th><th>含义</th><th>典型场景</th></tr>
+</thead>
+<tbody>
+<tr><td><code>REQUIRED</code>（默认）</td><td>有事务则加入，没有则新建</td><td>绝大多数业务</td></tr>
+<tr><td><code>REQUIRES_NEW</code></td><td>无论外面有没有，都新建独立事务</td><td>记录操作日志：主业务回滚，日志仍要落库</td></tr>
+<tr><td><code>NESTED</code></td><td>在现有事务内开 Savepoint，可部分回滚</td><td>批量下单，单条失败不影响其它条</td></tr>
+<tr><td><code>SUPPORTS</code></td><td>有就加入，没有就非事务执行</td><td>查询方法</td></tr>
+<tr><td><code>NOT_SUPPORTED</code></td><td>挂起当前事务，非事务执行</td><td>发送通知等不关心回滚的操作</td></tr>
+<tr><td><code>MANDATORY</code></td><td>必须已存在事务，否则抛异常</td><td>强制要求被事务方法调用</td></tr>
+<tr><td><code>NEVER</code></td><td>有事务就抛异常</td><td>禁止在事务内调用</td></tr>
+</tbody>
+</table>
+<p>本项目 <code>OrderService.createOrder</code> 用默认的 <code>REQUIRED</code>：Controller 没有事务，因此方法本身开启一个新事务，扣库存与写订单在同一事务内。</p>
+<h3>3.6.3 隔离级别与回滚规则</h3>
+<ul>
+<li><strong>隔离级别</strong> <code>isolation</code> 默认 <code>DEFAULT</code>，跟随数据库（本项目 MySQL 为 RR），一般不要改——改级别是全局一致性问题；</li>
+<li><strong>回滚规则</strong>：<code>@Transactional</code> 默认只对 <code>RuntimeException</code> 和 <code>Error</code> 回滚，<strong>受检异常（checked）默认不回滚</strong>。本项目写成：</li>
+</ul>
+<pre><code class="language-java">@Transactional(rollbackFor = Exception.class)
+public OrderCreateVO createOrder(OrderCreateRequest request) { ... }</code></pre>
+<p><code>rollbackFor = Exception.class</code> 表示任何异常都回滚，避免以后有人抛出受检异常时静默丢数据。</p>
+<ul>
+<li><code>readOnly = true</code>：只读事务提示，查询方法可用（第2章余票查询走 MVCC 快照读，不需要锁）；</li>
+<li><code>timeout</code>：事务超时秒数，防止长事务拖垮 undo 链。</li>
+</ul>
+<h3>3.6.4 高频面试题：<code>@Transactional</code> 失效的常见场景</h3>
+<table>
+<thead>
+<tr><th>#</th><th>场景</th><th>为什么会失效</th><th>规避</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><strong>同类内部自调用</strong> <code>this.createOrder()</code></td><td>this 不是代理对象，不经过 TransactionInterceptor</td><td>拆到另一个 Bean；注入自身代理；用 <code>AopContext.currentProxy()</code></td></tr>
+<tr><td>2</td><td>方法不是 public</td><td>代理只能拦截可覆写的公共方法</td><td>事务方法一律 public</td></tr>
+<tr><td>3</td><td><code>final</code> / <code>static</code> 方法</td><td>CGLIB 无法继承/覆写</td><td>去掉 final/static</td></tr>
+<tr><td>4</td><td>异常被 <code>catch</code> 吞掉</td><td>拦截器感知不到异常，正常提交</td><td>捕获后 <code>throw</code> 或手动 <code>TransactionAspectSupport.currentTransactionStatus().setRollbackOnly()</code></td></tr>
+<tr><td>5</td><td>抛受检异常且没配 <code>rollbackFor</code></td><td>默认只回滚运行时异常</td><td><code>rollbackFor = Exception.class</code></td></tr>
+<tr><td>6</td><td>对象不是 Spring Bean（<code>new OrderService()</code>）</td><td>没有代理</td><td>交给容器注入</td></tr>
+<tr><td>7</td><td>多线程调用</td><td>连接/事务绑定在调用方线程的 ThreadLocal，子线程不在同一事务</td><td>子线程单独开事务，主线程等待并汇总</td></tr>
+<tr><td>8</td><td>数据库引擎不支持事务</td><td>如 MyISAM</td><td>用 InnoDB</td></tr>
+<tr><td>9</td><td>传播行为配成 <code>NOT_SUPPORTED</code> / <code>NEVER</code></td><td>本来就不在事务里</td><td>检查传播配置</td></tr>
+</tbody>
+</table>
+<p>记忆口诀：<strong>代理没走到、异常没抛出、配置没生效</strong>。面试先答这三条，再展开到自调用、受检异常、多线程。</p>
+<h3>3.6.5 本项目实战：下单 + 扣库存 + 防超卖</h3>
+<p><code>OrderService.createOrder</code>（<code>src/main/java/com/railway/service/OrderService.java:48</code>）的完整流程：</p>
+<pre><code class="language-text">1. 参数校验（userId/trainNo/travelDate/站名/乘客名）
+2. 车站、车次存在性校验
+3. 查区间站序 fromOrder / toOrder，校验 from &lt; to
+4. SELECT ... FOR UPDATE   ——当前读锁定区间内所有库存行，先锁后改
+5. 逐段校验 remaining_count &gt;= 1，不足抛 SEAT_SOLD_OUT
+6. UPDATE ... WHERE remaining_count &gt;= 1   ——数据库层最后兜底
+7. INSERT ticket_order（待支付、15 分钟过期）
+8. failAfterDeduct=true 时抛异常 ——验证整体回滚的测试开关</code></pre>
+<p>关键 SQL（<code>SeatInventoryMapper.xml</code>）：</p>
+<pre><code class="language-sql">SELECT ... FROM seat_inventory
+WHERE train_id = ? AND travel_date = ? AND seat_type = ?
+  AND from_station_order &gt;= ? AND to_station_order &lt;= ?
+ORDER BY from_station_order
+FOR UPDATE;          -- 区间内每一段库存行加锁，其它事务排队
+
+UPDATE seat_inventory
+SET remaining_count = remaining_count - 1, version = version + 1
+WHERE ... AND remaining_count &gt;= 1;   -- 余票不足则不更新，返回影响行数</code></pre>
+<p>三道防线：</p>
+<table>
+<thead>
+<tr><th>层</th><th>手段</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td>应用层</td><td><code>expectedSegments = toOrder - fromOrder</code>，影响行数不等就抛异常</td><td>防止部分区段扣减</td></tr>
+<tr><td>SQL 层</td><td><code>remaining_count &gt;= 1</code></td><td>数据库层拒绝负库存</td></tr>
+<tr><td>事务层</td><td><code>FOR UPDATE</code> + <code>@Transactional</code></td><td>先锁后校验，避免并发下"读到旧值再扣减"</td></tr>
+</tbody>
+</table>
+<p>另外两个细节：</p>
+<ul>
+<li><strong>统一加锁顺序</strong>：<code>ORDER BY from_station_order</code>，所有事务按同一顺序拿行锁，避免第2章讲过的死锁环路；</li>
+<li><strong>订单号生成</strong>：<code>ORD + yyyyMMddHHmmss + 4 位随机数</code>，学习阶段够用；生产应交给号段/雪花算法。</li>
+</ul>
+<h3>3.6.6 事务实测记录（本次真实运行）</h3>
+<p>测试对象：G1 次 2026-04-15 二等座，北京南（站序 1）→ 上海虹桥（站序 4），区间含 3 个原子段。</p>
+<table>
+<thead>
+<tr><th>步骤</th><th>区间库存（1-2 / 2-3 / 3-4）</th><th>订单数</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>初始状态</td><td>320 / 3 / 210</td><td>2</td><td>样例数据</td></tr>
+<tr><td>正常下单成功</td><td>319 / 2 / 209</td><td>3</td><td>三段全部 -1，订单落库</td></tr>
+<tr><td><code>failAfterDeduct=true</code> 模拟异常</td><td>319 / 2 / 209</td><td>3</td><td>三段已扣减的 UPDATE 被回滚，订单 INSERT 也未生效</td></tr>
+</tbody>
+</table>
+<p>正常下单响应：</p>
+<pre><code class="language-json">{
+  "code": 0, "message": "成功",
+  "data": {
+    "orderId": 6,
+    "orderNo": "ORD202609142319531432",
+    "trainNo": "G1", "fromStation": "北京南", "toStation": "上海虹桥",
+    "seatType": "二等座", "price": 716.50,
+    "status": "待支付", "expireAt": "2026-09-14T23:34:53.4368786"
+  }
+}</code></pre>
+<p>模拟异常响应（扣库存、写订单都已执行，异常抛出后整体回滚）：</p>
+<pre><code class="language-json">{ "code": 2002, "message": "模拟异常：扣库存与订单必须一起回滚", "data": null }</code></pre>
+<p>验证命令：</p>
+<pre><code class="language-bash"># 1. 正常下单
+curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d @order-success.json
+
+# 2. 事务回滚：body 里加 "failAfterDeduct": true
+curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" -d @order-fail.json
+
+# 3. 对比前后库存与订单
+#    SELECT from_station_order, to_station_order, remaining_count
+#    FROM seat_inventory WHERE train_id=1 AND travel_date='2026-04-15' AND seat_type='二等座';</code></pre>
+<h3>3.6.7 防超卖的分层演进</h3>
+<pre><code class="language-text">第2章：CHECK(remaining_count &gt;= 0) + UPDATE ... WHERE remaining_count &gt;= 1
+第3章：@Transactional + SELECT ... FOR UPDATE 先锁后扣 + 区间影响行数校验
+第4章：Redis 分布式锁 + Lua 原子扣减 + MQ 异步削峰（1000 QPS）</code></pre>
+<p>本章用数据库事务解决"同库、单实例"的一致性；第4章解决"锁范围大、数据库压力大"的性能问题。面试按此顺序回答，体现演进思维。</p>
+<hr />
+<h2>3.7 本章代码地图</h2>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>src/main/resources/application.yml</code></td><td>数据源、连接池、MyBatis 配置</td></tr>
+<tr><td><code>src/main/java/com/railway/mapper/*.java</code></td><td>4 个 Mapper 接口</td></tr>
+<tr><td><code>src/main/resources/mapper/TrainMapper.xml</code></td><td>车次查询（动态 SQL + 子查询余票/票价）</td></tr>
+<tr><td><code>src/main/resources/mapper/StationMapper.xml</code></td><td>车站查询 + ResultMap</td></tr>
+<tr><td><code>src/main/resources/mapper/SeatInventoryMapper.xml</code></td><td>区间库存 <code>FOR UPDATE</code> 锁定与扣减</td></tr>
+<tr><td><code>src/main/resources/mapper/TicketOrderMapper.xml</code></td><td>订单写入、按订单号查询</td></tr>
+<tr><td><code>src/main/java/com/railway/controller/TrainController.java</code></td><td><code>GET /api/trains</code></td></tr>
+<tr><td><code>src/main/java/com/railway/controller/OrderController.java</code></td><td><code>POST /api/orders</code></td></tr>
+<tr><td><code>src/main/java/com/railway/service/TrainService.java</code></td><td>车次查询业务校验与枚举翻译</td></tr>
+<tr><td><code>src/main/java/com/railway/service/OrderService.java</code></td><td>下单事务：锁库存 → 扣减 → 写订单</td></tr>
+<tr><td><code>src/main/java/com/railway/common/ApiResponse.java</code></td><td>统一返回结构 <code>{code,message,data,timestamp}</code></td></tr>
+<tr><td><code>src/main/java/com/railway/exception/GlobalExceptionHandler.java</code></td><td>业务/参数/系统异常统一出口</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>3.8 自检三问（对齐验收标准）</h2>
+<ol>
+<li><strong>是什么</strong>：MyBatis 靠 <code>namespace + id</code> 把 XML 与接口绑定；动态 SQL 用 <code>&lt;if&gt;/&lt;where&gt;/&lt;foreach&gt;</code> 拼装；Spring 事务靠 AOP 代理 + <code>DataSourceTransactionManager</code> 实现提交/回滚。</li>
+<li><strong>为什么</strong>：车次查询要同时过滤 O-D、方向、等级，还要取区间最小余票，所以必须动态 SQL + 子查询；下单是"扣库存 + 写订单"两步写操作，必须同事务，否则超卖或丢单。</li>
+<li><strong>怎么排错</strong>：接口 404/绑定异常先查 namespace 与 <code>mapper-locations</code>；事务不回滚先查是否自调用、异常是否被吞、<code>rollbackFor</code> 是否覆盖。</li>
+</ol>
+<p>验收命令回顾：</p>
+<pre><code class="language-bash"># 车次列表从 MySQL 返回 ✅
+curl "http://localhost:8080/api/trains?from=北京南&amp;to=上海虹桥&amp;date=2026-04-15"
+
+# 事务一致性：人为异常后库存与订单均未变化 ✅
+curl -X POST http://localhost:8080/api/orders -H "Content-Type: application/json" \
+     -d '{"userId":9002,"trainNo":"G1","travelDate":"2026-04-15","fromStation":"北京南",\
+          "toStation":"上海虹桥","seatType":"二等座","passengerName":"李四","failAfterDeduct":true}'</code></pre>
+<p>面试追问预演：</p>
+<ul>
+<li>"Mapper 接口没有实现类，为什么能注入？"→ MyBatis 用 JDK 动态代理生成实现，Spring 把它注册成 Bean；<code>@Mapper</code> 让扫描器识别接口。</li>
+<li>"<code>#{}</code> 和 <code>${}</code> 区别？"→ 预编译占位符 vs 字符串拼接，前者防注入。</li>
+<li>"自调用为什么事务失效？"→ 调用的是原始对象而不是代理对象，事务拦截器没有机会介入。</li>
+<li>"先扣库存还是先写订单？"→ 同一事务内顺序不影响正确性，但要统一加锁顺序；本项目先锁库存再写单，便于余票不足时快速失败。</li>
+<li>"受检异常会回滚吗？"→ 默认不会，必须 <code>rollbackFor = Exception.class</code>。</li>
+</ul>
+<hr />
+<h2>3.9 下一章预告</h2>
+<p><strong>第4章 高并发与 Redis</strong>：本章的 <code>FOR UPDATE</code> 在单机小并发下没问题，但 1000 QPS 抢同一区间时，数据库行锁会成为瓶颈。下一章引入 Redis 缓存余票、SETNX/Redisson 分布式锁、Lua 原子扣减和 MQ 异步下单，目标：<strong>100 并发抢 10 张票，恰好生成 10 个订单，零超卖</strong>。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-03.html</span>
+  <span>第3章 MyBatis与Spring Boot整合</span>
+</footer>
+</body>
+</html>

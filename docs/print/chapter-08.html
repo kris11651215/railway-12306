@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第8章 项目收尾与包装 — 铁路智慧出行综合服务平台</title>
+<style>
+:root { --ink:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0b5cad; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #f6f8fa;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  font-size: 11pt; line-height: 1.75;
+}
+.chapter { max-width: 860px; margin: 0 auto; padding: 36px 44px 72px; background: #fff; }
+@media screen { .chapter { box-shadow: 0 1px 4px rgba(0,0,0,.08); margin-top: 24px; margin-bottom: 24px; } }
+h1 { font-size: 22pt; border-bottom: 3px solid var(--accent); padding-bottom: 10px; margin: 0 0 22px; }
+h2 { font-size: 15pt; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 10px; margin: 28px 0 12px; }
+h3 { font-size: 12.5pt; margin: 20px 0 8px; }
+h4 { font-size: 11.5pt; margin: 16px 0 6px; }
+p { margin: 8px 0; }
+blockquote { margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--line); background: #f6f8fa; color: var(--muted); border-radius: 0 6px 6px 0; }
+blockquote p { margin: 2px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10pt; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef3f8; }
+tr:nth-child(even) td { background: #fafcfe; }
+pre { background: #0f172a; color: #e6edf3; padding: 12px 14px; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.6; }
+pre code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: transparent; padding: 0; }
+code { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; background: #eef1f4; padding: 1px 4px; border-radius: 4px; font-size: 95%; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+hr { border: none; border-top: 1px dashed var(--line); margin: 24px 0; }
+a { color: var(--accent); }
+.mindmap-outline { border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; padding: 10px 18px; margin: 12px 0 20px; }
+.mindmap-outline ul { list-style: none; padding-left: 18px; border-left: 1px dashed #b9c6d4; margin: 4px 0; }
+.mindmap-outline > ul { border-left: none; padding-left: 4px; }
+.mindmap-outline li { margin: 3px 0; }
+.mindmap-outline .mm-root-node { color: var(--accent); font-size: 12pt; }
+.print-header, .print-footer { display: none; }
+
+@page {
+  size: A4;
+  margin: 18mm 14mm 20mm 14mm;
+  @top-left { content: "铁路智慧出行综合服务平台"; font-size: 8.5pt; color: #666; }
+  @top-right { content: "第8章 项目收尾与包装"; font-size: 8.5pt; color: #666; }
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8.5pt; color: #666; }
+}
+
+@media print {
+  body { background: #fff; }
+  .chapter { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+  h1 { page-break-before: always; break-before: page; }
+  h1:first-of-type { page-break-before: avoid; break-before: auto; }
+  h2, h3 { page-break-after: avoid; break-after: avoid; }
+  pre, table, blockquote, tr, img { page-break-inside: avoid; break-inside: avoid; }
+  thead { display: table-header-group; }
+  .print-header {
+    display: flex; justify-content: space-between; position: fixed;
+    top: 0; left: 0; right: 0; padding: 2mm 0 1.5mm;
+    border-bottom: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+  .print-footer {
+    display: flex; justify-content: space-between; position: fixed;
+    bottom: 0; left: 0; right: 0; padding: 1.5mm 0 2mm;
+    border-top: .5pt solid #ccc; font-size: 8.5pt; color: #666;
+  }
+}
+</style>
+</head>
+<body>
+<header class="print-header">
+  <span>铁路智慧出行综合服务平台</span>
+  <span>第8章 项目收尾与包装</span>
+</header>
+<main class="chapter">
+<h1>第8章 项目收尾与包装</h1>
+<blockquote>
+<p>项目：铁路智慧出行综合服务平台<br />
+状态：✅ 已完成<br />
+建议耗时：第11-12周，约3-5天<br />
+深度：Swagger/Knife4j L2（会用、能配）；JUnit5+Mockito L3（能写能排错）；Git/README/STAR 为工程素养<br />
+一句话：给全部接口配可访问的文档，用 JUnit5 + Mockito 守住核心 Service，写一份面试官 3 分钟看懂、量化指标真实的 README，并把八章材料合并成一本可打印的总册。</p>
+</blockquote>
+<h2>本章开头导图 · 打印备份</h2>
+<p>Mermaid 源码：<code>docs/mindmaps/chapter-08-start.mmd</code>（可用 <code>mmdc -i docs/mindmaps/chapter-08-start.mmd -o docs/print/assets/chapter-08-start.svg</code> 渲染为 SVG 后替换本节）。</p>
+<div class="mindmap-outline"><ul><li><strong class="mm-root-node">第8章 项目收尾与包装 🔄</strong><ul><li>本章目标<ul><li>接口文档可访问</li><li>测试体系完善</li><li>README面向面试官</li><li>打印总册合并</li><li>项目总复盘导图</li></ul></li><li>核心知识点<ul><li>Swagger与Knife4j<ul><li>OpenAPI 3.0 规范</li><li>接口分组与参数</li><li>离线轻量文档方案</li><li>生产替换步骤</li></ul></li><li>JUnit与Mockito<ul><li>@Mock与@InjectMocks</li><li>行为验证与异常断言</li><li>测试金字塔</li><li>Testcontainers集成测试</li></ul></li><li>Git提交规范<ul><li>feat与fix与docs</li><li>小步提交</li><li>提交信息可读性</li></ul></li><li>STAR法则<ul><li>Situation痛点</li><li>Task目标</li><li>Action行动</li><li>Result量化</li></ul></li></ul></li><li>代码产出<ul><li>API文档与可视化页 📦</li><li>ApiDocRegistry与覆盖率测试 📦</li><li>Service层Mockito单测 📦</li><li>README.md 📦</li><li>full-book.html 📦</li><li>99-final.md 总复盘 📦</li></ul></li><li>验收标准<ul><li>README含STAR与量化指标 🎯</li><li>Swagger可访问且接口全覆盖 🎯</li><li>单元测试全部通过 🎯</li><li>full-book.html可打开 🎯</li><li>导图缩进大纲可读 🎯</li></ul></li><li>与前后章关联<ul><li>汇总第0到7章全部产出</li><li>双模式与未实测项如实标注</li><li>面试故事线一页讲清</li></ul></li><li>预计耗时<ul><li>第11-12周</li><li>约3-5天</li></ul></li><li>重点难点<ul><li>API文档与实际映射一致 🧠</li><li>量化指标必须真实 🔥</li><li>总册分页与导图内嵌 ⭐</li><li>Testcontainers未实机 🧠</li></ul></li></ul></li></ul></div>
+<hr />
+<h2>本章目标</h2>
+<table>
+<thead>
+<tr><th>目标</th><th>具体产出</th><th>验收方式</th></tr>
+</thead>
+<tbody>
+<tr><td>接口文档</td><td><code>/swagger-ui.html</code> + <code>/v3/api-docs</code>（OpenAPI 3.0）</td><td>页面可访问、接口全覆盖（覆盖率测试）</td></tr>
+<tr><td>测试体系</td><td>Mockito 单测 + 已有并发/AI 测试</td><td><code>.\mvnw.cmd test</code> 全部通过</td></tr>
+<tr><td>README</td><td>痛点 + 技术栈 + STAR 量化 + 华交叙事 + 部署/API 链接</td><td>面试官 3 分钟能看懂</td></tr>
+<tr><td>打印总册</td><td><code>docs/print/full-book.html</code></td><td>封面/目录/导图/各章/结尾导图齐全</td></tr>
+<tr><td>总复盘</td><td><code>docs/mindmaps/99-final.md</code></td><td>能看出知识网络而非章节罗列</td></tr>
+<tr><td>Git 规范</td><td><code>feat(章节号): 描述</code> 的提交习惯</td><td>提交历史可读</td></tr>
+</tbody>
+</table>
+<p>配套材料：</p>
+<ul>
+<li>开头导图：<code>docs/mindmaps/chapter-08-start.mmd</code></li>
+<li>复盘导图：<code>docs/mindmaps/chapter-08-end.mmd</code></li>
+<li>总复盘：<code>docs/mindmaps/99-final.md</code></li>
+<li>打印总册：<code>docs/print/full-book.html</code></li>
+<li>README：<code>README.md</code></li>
+</ul>
+<hr />
+<h2>8.0 环境与验证边界</h2>
+<table>
+<thead>
+<tr><th>项</th><th>本机状态</th><th>处理方式</th></tr>
+</thead>
+<tbody>
+<tr><td>springdoc / Knife4j</td><td>本地仓库无依赖</td><td>不下载；用<strong>自实现 OpenAPI 3.0 文档</strong>（<code>/v3/api-docs</code> + <code>/swagger-ui.html</code>），并在 8.1.4 给出生产替换步骤</td></tr>
+<tr><td>Testcontainers</td><td>仅 BOM、无核心包且无 Docker</td><td>不下载不安装；给出集成测试代码模板与接入步骤，标注"未实机"</td></tr>
+<tr><td>Mockito</td><td>已随 <code>spring-boot-starter-test</code> 提供</td><td>直接用于核心 Service 单测</td></tr>
+<tr><td>Pandoc / LaTeX / mmdc</td><td>未安装</td><td>full-book 用自写 Node 脚本离线合并；PDF 只给命令不执行</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>8.1 Swagger / Knife4j：让接口可被看见</h2>
+<h3>8.1.1 是什么</h3>
+<ul>
+<li><strong>OpenAPI 3.0</strong>：描述 REST 接口的规范（路径、方法、参数、请求体、响应）。</li>
+<li><strong>Swagger UI</strong>：把 OpenAPI 文档渲染成可视化页面，支持"试用"。</li>
+<li><strong>Knife4j</strong>：基于 springdoc 的增强 UI，国内团队常用，支持文档分组、离线文档导出。</li>
+</ul>
+<p>标准接入（有网络环境的项目）：</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.springdoc&lt;/groupId&gt;
+    &lt;artifactId&gt;springdoc-openapi-starter-webmvc-ui&lt;/artifactId&gt;
+    &lt;version&gt;2.6.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+<pre><code class="language-java">@Bean
+public OpenAPI railwayOpenApi() {
+    return new OpenAPI().info(new Info()
+            .title("铁路智慧出行综合服务平台 API")
+            .version("1.0.0"));
+}</code></pre>
+<p>访问 <code>http://localhost:8080/swagger-ui/index.html</code>，Knife4j 则是 <code>/doc.html</code>。</p>
+<h3>8.1.2 为什么本章要自实现</h3>
+<p>离线约束下不能下载新依赖，但"接口必须有文档"这条验收不能打折。于是用零依赖方式实现同样的能力：</p>
+<pre><code class="language-text">config/ApiDocConfig.java      定义 18 个接口的元数据（分组/摘要/参数/请求体）
+apidoc/ApiDocRegistry.java    生成标准 OpenAPI 3.0 JSON
+controller/ApiDocController.java
+  GET /v3/api-docs            OpenAPI JSON
+  GET /swagger-ui.html        自渲染可视化页面（内嵌 CSS/JS，不依赖外网）</code></pre>
+<h3>8.1.3 用测试保证"文档不虚"</h3>
+<p>文档最容易烂掉：加了接口忘了写文档。本章用 Spring MVC 的真实映射做对拍：</p>
+<pre><code class="language-java">@SpringBootTest
+class ApiDocCoverageTest {
+
+    @Autowired
+    private RequestMappingHandlerMapping handlerMapping;
+
+    @Autowired
+    private ApiDocRegistry apiDocRegistry;
+
+    @Test
+    void everyControllerMappingShouldBeDocumented() {
+        Set&lt;String&gt; actual = new TreeSet&lt;&gt;();
+        for (RequestMappingInfo info : handlerMapping.getHandlerMethods().keySet()) {
+            // 遍历 PathPatterns + HTTP 方法，排除 /error
+        }
+        Set&lt;String&gt; missing = new TreeSet&lt;&gt;(actual);
+        missing.removeAll(apiDocRegistry.documentedKeys());
+        assertTrue(missing.isEmpty(), "存在未文档化接口: " + missing);
+    }
+}</code></pre>
+<p>效果：以后<strong>新增一个 Controller 方法但忘记登记文档，测试会直接失败</strong>。这就是"可执行的文档纪律"。</p>
+<h3>8.1.4 生产替换为 springdoc/Knife4j 的步骤</h3>
+<ol>
+<li>加依赖 <code>springdoc-openapi-starter-webmvc-ui</code>（或 <code>knife4j-openapi3-jakarta-spring-boot-starter</code>）；</li>
+<li>删除 <code>/swagger-ui.html</code> 的自实现页面即可，<code>/v3/api-docs</code> 由 springdoc 自动提供；</li>
+<li>如需保留 <code>ApiDocCoverageTest</code>，改为比对 springdoc 动态输出，或降级为回归用例；</li>
+<li>Knife4j 增强：<code>knife4j.enable=true</code>，访问 <code>/doc.html</code> 可导出离线 HTML/Markdown。</li>
+</ol>
+<h3>8.1.5 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td>页面空白</td><td><code>/v3/api-docs</code> 返回异常</td><td>先直接访问 JSON 排查</td></tr>
+<tr><td>缺接口</td><td>未登记或路径写错</td><td>跑覆盖率测试，按提示补</td></tr>
+<tr><td>中文字段乱码</td><td>响应编码问题</td><td>设置 <code>produces = APPLICATION_JSON_VALUE</code>（UTF-8）</td></tr>
+<tr><td>生产 UI 404</td><td>路径不对</td><td>springdoc 是 <code>/swagger-ui/index.html</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>8.2 JUnit 5 + Mockito：给核心 Service 上保险</h2>
+<h3>8.2.1 测试金字塔</h3>
+<pre><code class="language-text">        少量集成测试（Testcontainers / @SpringBootTest）
+      中量接口与并发测试（GrabConcurrencyTest、ApiDocCoverageTest）
+    大量单元测试（Mockito 隔离依赖：TrainServiceTest、OrderServiceTest）</code></pre>
+<p>原则：<strong>单元测试要快、要确定</strong>；依赖数据库/Redis/外网的场景交给集成测试。</p>
+<h3>8.2.2 Mockito 三件套</h3>
+<pre><code class="language-java">@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock private StationMapper stationMapper;
+    @Mock private TrainMapper trainMapper;
+    @Mock private SeatInventoryMapper seatInventoryMapper;
+    @Mock private TicketOrderMapper ticketOrderMapper;
+
+    @InjectMocks private OrderService orderService;
+
+    @Test
+    void createOrderShouldDeductSegmentsAndInsertOrder() {
+        stubJourney();
+        when(seatInventoryMapper.selectSegmentsForUpdate(1L, TRAVEL_DATE, "二等座", 1, 3))
+                .thenReturn(List.of(segment(5, "232.50"), segment(3, "344.50")));
+        when(seatInventoryMapper.deductRange(1L, TRAVEL_DATE, "二等座", 1, 3)).thenReturn(2);
+
+        OrderCreateVO vo = orderService.createOrder(request());
+
+        assertEquals(0, vo.getPrice().compareTo(new BigDecimal("577.00")));
+        assertEquals("待支付", vo.getStatus());
+        verify(ticketOrderMapper).insert(any(TicketOrder.class));
+    }
+}</code></pre>
+<p>三个关键动作：</p>
+<ol>
+<li><strong><code>@Mock</code></strong>：造出假的 Mapper，不碰数据库；</li>
+<li><strong><code>when(...).thenReturn(...)</code></strong>：约定依赖行为（库存 2 段、扣减成功 2 行）；</li>
+<li><strong><code>verify(...)</code> / <code>assertThrows(...)</code></strong>：验证"该调用的调用了、不该调用的没调用、异常路径正确"。</li>
+</ol>
+<h3>8.2.3 本章覆盖的异常路径</h3>
+<table>
+<thead>
+<tr><th>用例</th><th>断言</th></tr>
+</thead>
+<tbody>
+<tr><td>正常下单</td><td>价格 = 区段票价之和、状态待支付、INSERT 被调用</td></tr>
+<tr><td>余票不足</td><td>抛 2001，<code>deductRange</code> 从未调用，订单未插入</td></tr>
+<tr><td>扣减冲突（影响行数不足）</td><td>抛 2001，订单未插入</td></tr>
+<tr><td>区间反向</td><td>抛 1002，库存与订单 Mapper 无交互</td></tr>
+<tr><td><code>failAfterDeduct=true</code></td><td>抛 2002，但 INSERT 已发生（由事务回滚兜底）</td></tr>
+<tr><td>车站不存在</td><td>抛 1001（<code>TrainServiceTest</code>）</td></tr>
+<tr><td>出发到达相同</td><td>抛 400，且不查询 Mapper</td></tr>
+</tbody>
+</table>
+<p><code>@ExtendWith(MockitoExtension.class)</code> 默认严格模式：<strong>未使用的 stub 会直接报错</strong>，避免"假测试"。</p>
+<h3>8.2.4 Testcontainers 集成测试（方案就绪，未实机）</h3>
+<p>Testcontainers 用真实容器跑 MySQL/Redis 集成测试：</p>
+<pre><code class="language-java">@Testcontainers
+@SpringBootTest(properties = {
+        "railway.redis.mode=redis",
+        "railway.grab.order-store=db"
+})
+class OrderServiceIntegrationTest {
+
+    @Container
+    static MySQLContainer&lt;?&gt; mysql = new MySQLContainer&lt;&gt;("mysql:8.4")
+            .withDatabaseName("railway")
+            .withInitScript("sql/init.sql");
+
+    @Container
+    static GenericContainer&lt;?&gt; redis = new GenericContainer&lt;&gt;("redis:7-alpine")
+            .withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", mysql::getJdbcUrl);
+        registry.add("spring.datasource.username", mysql::getUsername);
+        registry.add("spring.datasource.password", mysql::getPassword);
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", () -&gt; redis.getMappedPort(6379));
+    }
+
+    @Test
+    void concurrentGrabShouldNotOversellWithRealRedisAndMysql() {
+        // 与 GrabConcurrencyTest 相同的并发断言，但走真实中间件
+    }
+}</code></pre>
+<p>接入步骤：<code>pom.xml</code> 加 <code>org.testcontainers:junit-jupiter</code>、<code>mysql</code>，且本机有 Docker；<code>sql/init.sql</code> 复制一份到 <code>src/test/resources/sql/</code> 供容器初始化。本机无 Docker 与依赖包，本章仅提供模板并标注<strong>未实机验证</strong>。</p>
+<h3>8.2.5 怎么排错</h3>
+<table>
+<thead>
+<tr><th>现象</th><th>根因</th><th>处理</th></tr>
+</thead>
+<tbody>
+<tr><td><code>UnnecessaryStubbingException</code></td><td>stub 了没用的方法</td><td>删多余 stub 或改用 <code>lenient()</code>（不推荐）</td></tr>
+<tr><td><code>NullPointerException</code> in service</td><td>忘了 <code>@InjectMocks</code> 或构造参数对不上</td><td>检查注解与构造函数</td></tr>
+<tr><td>测试互相污染</td><td>静态状态/共享容器</td><td>每个测试独立造数据</td></tr>
+<tr><td>并发测试偶发失败</td><td>用 <code>Thread.sleep</code> 代替同步</td><td>用 <code>CountDownLatch</code>/<code>CyclicBarrier</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>8.3 Git 提交规范</h2>
+<h3>8.3.1 约定式提交</h3>
+<pre><code class="language-text">feat(第5章): 实现时间扩展图与最快最经济换乘
+fix(第4章): 修复换乘等待回溯为0的问题
+docs(第8章): 生成README与打印总册
+test(第7章): 新增部署配置守护测试
+refactor(第6章): 抽取样例时刻表供AI工具复用</code></pre>
+<p>格式：<code>type(scope): 描述</code>。常用 type：<code>feat</code> / <code>fix</code> / <code>docs</code> / <code>test</code> / <code>refactor</code> / <code>chore</code>。</p>
+<h3>8.3.2 为什么</h3>
+<ul>
+<li>面试官看提交历史能快速判断你的工程习惯；</li>
+<li>出问题能通过 <code>git log --oneline</code> 快速定位到功能点；</li>
+<li>小步提交让每一步都可回滚、可测试。</li>
+</ul>
+<h3>8.3.3 常用命令</h3>
+<pre><code class="language-bash">git status
+git add src/main/java/com/railway/algorithm/TimeExpandedGraph.java docs/chapters/chapter-05.md
+git commit -m "feat(第5章): 实现时间扩展图与双策略换乘"
+git log --oneline -10
+git diff --stat</code></pre>
+<blockquote>
+<p>本项目遵循"用户明确要求才提交"的约定：本章只沉淀规范，不代提交。</p>
+</blockquote>
+<hr />
+<h2>8.4 README 撰写：面试第一印象</h2>
+<h3>8.4.1 面向谁写</h3>
+<p>面向铁路局技术岗面试官（尤其广铁）：他们时间有限，关心<strong>业务理解、工程能力、量化结果、与岗位的契合度</strong>。</p>
+<h3>8.4.2 结构模板（本项目实际采用）</h3>
+<pre><code class="language-text">1. 标题 + 一句话定位 + 技术主线
+2. 三句话看懂业务痛点（席位复用/防超卖/换乘候补）
+3. 项目缘起（引用 docs/project-origin.md，不重复正文）
+4. 核心亮点 STAR × 4（高并发/换乘算法/AI主线/广铁特色）
+5. 技术栈表格
+6. 量化指标表（每条注明来源，模拟验证单独标注）
+7. 功能与接口表 + API 文档/算法/数据库链接
+8. 快速开始（离线 / Docker / 真实LLM 三种方式）
+9. 项目结构
+10. 学习材料导航
+11. 验证边界（如实说明未实机项）
+12. 面试故事线（一页版）</code></pre>
+<h3>8.4.3 写作三条底线</h3>
+<ol>
+<li><strong>量化必须真实</strong>：写"100 并发抢 10 票 → 10 订单"就必须有测试/脚本能复现；内存模拟的数据必须标注"内存模拟验证"。</li>
+<li><strong>痛点先行</strong>：先讲铁路业务问题，再讲技术方案，避免"技术堆砌"。</li>
+<li><strong>链接可点</strong>：部署文件、API 文档、章节材料、导图都要给相对路径链接。</li>
+</ol>
+<h3>8.4.4 STAR 法则</h3>
+<pre><code class="language-text">S（Situation）：业务背景与痛点，如"100 并发抢 10 张票必须不多不少"
+T（Task）：你的目标，如"升级为分布式锁 + 原子扣减 + 削峰"
+A（Action）：具体技术动作，如 Lua 脚本、看门狗续期、剪枝策略
+R（Result）：量化结果，如"10 个订单、0 超卖、QPS 990"</code></pre>
+<p>写简历与面试回答时严格按 STAR，每段亮点都落到数字。</p>
+<hr />
+<h2>8.5 打印归档：从章节 HTML 到总册</h2>
+<h3>8.5.1 每章打印版</h3>
+<pre><code class="language-bash">node scripts/md2print.mjs docs/chapters/chapter-08.md docs/print/chapter-08.html \
+  "第8章 项目收尾与包装" --mindmap docs/mindmaps/chapter-08-start.mmd</code></pre>
+<ul>
+<li>A4 页边距、页眉页脚、h1 分页、代码块与表格防跨页；</li>
+<li>思维导图以 <strong>Markdown 缩进大纲</strong>内嵌（离线、不依赖 JS/网络），SVG 仅在已预装 mmdc 时可选引用。</li>
+</ul>
+<h3>8.5.2 总册合并（本章新增脚本）</h3>
+<p><code>scripts/merge-print.mjs</code> 用 Node 标准库完成：</p>
+<ol>
+<li>读取 <code>docs/print/chapter-00.html</code> ~ <code>chapter-08.html</code>，抽取每章 <code>&lt;main class="chapter"&gt;</code> 内容；</li>
+<li>每章正文后追加该章 <code>chapter-XX-end.mmd</code> 的复盘导图缩进大纲；</li>
+<li>组装封面（项目名/技术主线/日期）、目录（锚点链接）、</li>
+</ol>
+<p>总起导图（<code>docs/mindmaps/00-overall.md</code> 与 <code>00-progress.md</code> 的缩进大纲）、 第0-8章正文、项目结尾导图（<code>docs/mindmaps/99-final.md</code>）、附录（文件与验证说明）；</p>
+<ol>
+<li>复用章节 CSS（<code>@media print</code>、h1 分页、防跨页），确保直接打印正常。</li>
+</ol>
+<pre><code class="language-bash">node scripts/merge-print.mjs</code></pre>
+<p>产物：<code>docs/print/full-book.html</code>。</p>
+<h3>8.5.3 PDF（视环境而定）</h3>
+<ul>
+<li><strong>浏览器打印</strong>：打开 <code>full-book.html</code>，Ctrl+P → 另存为 PDF（零安装，推荐）；</li>
+<li><strong>Pandoc + LaTeX</strong>（仅当已安装时）：</li>
+</ul>
+<pre><code class="language-bash">pandoc docs/chapters/*.md -o docs/print/full-book.pdf --toc \
+  --pdf-engine=xelatex --variable CJKmainfont="Noto Sans CJK SC" \
+  --variable geometry:margin=2cm</code></pre>
+<p>未安装则只给命令，不下载不安装（本项目遵守该红线）。</p>
+<h3>8.5.4 打印检查清单</h3>
+<p>打印检查清单（已在合并脚本与静态检查中逐项确认）：</p>
+<ul>
+<li>✅ 封面、目录、总起导图、总进度图、第0-8章、项目结尾导图、附录齐全</li>
+<li>✅ 每章 h1 前分页</li>
+<li>✅ 导图为缩进大纲（无 SVG 依赖）</li>
+<li>✅ 代码块、表格 <code>page-break-inside: avoid</code></li>
+<li>✅ 页眉页脚与页码</li>
+<li>✅ UTF-8 中文正常</li>
+</ul>
+<hr />
+<h2>8.6 项目收尾成果</h2>
+<h3>8.6.1 能力全景</h3>
+<pre><code class="language-text">业务：席位复用 → 事务防超卖 → Redis锁+Lua+削峰 → 时间扩展图换乘 → 站内规则 → AI助手/RAG → 部署监控
+数据：MySQL 索引与事务 → MyBatis → Redis → 向量检索 → 候补聚合SQL
+工程：90个测试 → OpenAPI文档 → Docker Compose → Prometheus/Grafana → 打印总册与README
+特色：广铁候补2小时决策 + 广州南站接驳；华交与单杏花叙事</code></pre>
+<h3>8.6.2 验收结果</h3>
+<table>
+<thead>
+<tr><th>验收项</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>README 完整，含 STAR 与量化指标</td><td>✅ <code>README.md</code></td></tr>
+<tr><td>API 文档可访问、接口全覆盖</td><td>✅ <code>/swagger-ui.html</code>（未实机启动，覆盖率测试通过）</td></tr>
+<tr><td>单元测试通过</td><td>✅ 90 个测试全绿</td></tr>
+<tr><td><code>full-book.html</code> 可打开</td><td>✅ 合并脚本产出，本地静态可开</td></tr>
+<tr><td>打印版导图缩进大纲可读</td><td>✅ 各章内嵌大纲</td></tr>
+<tr><td>总进度全部 ✅</td><td>✅ <code>docs/mindmaps/00-progress.md</code></td></tr>
+</tbody>
+</table>
+<hr />
+<h2>8.7 测试与验证</h2>
+<pre><code class="language-bash">.\mvnw.cmd test</code></pre>
+<pre><code class="language-text">Tests run: 90, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS</code></pre>
+<p>本章新增 10 个测试：<code>ApiDocCoverageTest</code> 2 个（接口覆盖与 OpenAPI 结构）、<code>TrainServiceTest</code> 3 个、<code>OrderServiceTest</code> 5 个；累计 90 个。</p>
+<p>未实机项：HTTP 启动验证（8080 未运行）、Docker 编排、Testcontainers、Pandoc/LaTeX PDF，均已在相应章节标注。</p>
+<hr />
+<h2>8.8 本章代码地图</h2>
+<table>
+<thead>
+<tr><th>文件</th><th>职责</th></tr>
+</thead>
+<tbody>
+<tr><td><code>src/main/java/com/railway/config/ApiDocConfig.java</code></td><td>18 个接口的文档元数据</td></tr>
+<tr><td><code>src/main/java/com/railway/apidoc/ApiDocRegistry.java</code></td><td>OpenAPI 3.0 JSON 生成</td></tr>
+<tr><td><code>src/main/java/com/railway/controller/ApiDocController.java</code></td><td><code>/v3/api-docs</code>、<code>/swagger-ui.html</code></td></tr>
+<tr><td><code>src/test/java/com/railway/apidoc/ApiDocCoverageTest.java</code></td><td>接口与文档对拍</td></tr>
+<tr><td><code>src/test/java/com/railway/service/TrainServiceTest.java</code></td><td>车次查询 Mockito 单测</td></tr>
+<tr><td><code>src/test/java/com/railway/service/OrderServiceTest.java</code></td><td>下单链路 Mockito 单测</td></tr>
+<tr><td><code>README.md</code></td><td>面向面试官的项目说明</td></tr>
+<tr><td><code>scripts/merge-print.mjs</code></td><td>离线合并打印总册</td></tr>
+<tr><td><code>docs/mindmaps/99-final.md</code></td><td>项目总复盘导图</td></tr>
+<tr><td><code>docs/print/full-book.html</code></td><td>打印总册</td></tr>
+</tbody>
+</table>
+<hr />
+<h2>8.9 高频面试问答</h2>
+<ol>
+<li><strong>"为什么 Mockito 测试要严格模式？"</strong></li>
+</ol>
+<p>未使用的 stub 说明测试与实现脱节，严格模式直接失败，逼迫测试保持真实。</p>
+<ol>
+<li><strong>"单元测试与集成测试怎么分工？"</strong></li>
+</ol>
+<p>单测用 Mock 隔离依赖，验证业务分支与边界；集成测试用 Testcontainers 起真实 MySQL/Redis，验证 SQL、事务、并发等"只有真环境才暴露"的问题。</p>
+<ol>
+<li><strong>"怎么保证接口文档不过期？"</strong></li>
+</ol>
+<p>用 <code>RequestMappingHandlerMapping</code> 枚举真实映射与文档注册表对拍，缺一项就测试失败；这就是"文档即测试"。</p>
+<ol>
+<li><strong>"README 怎么写才像工程而非课程作业？"</strong></li>
+</ol>
+<p>痛点先行、STAR 量化、每项指标可复现、未验证项如实标注、部署与文档链接齐全。</p>
+<ol>
+<li><strong>"Git 提交为什么要约定式？"</strong></li>
+</ol>
+<p>可读、可追溯、可自动化（生成 changelog、语义化版本），面试官能从历史看出工程习惯。</p>
+<ol>
+<li><strong>"项目最大的难点是什么？"</strong></li>
+</ol>
+<p>示例回答：不是单点技术，而是"一致性链条"——缓存与 DB、锁与库存、AI 与真实数据、异步与回滚，每一步都要有兜底和验证。</p>
+<hr />
+<h2>8.10 自检三问</h2>
+<ol>
+<li><strong>是什么</strong>：OpenAPI 描述接口、Mockito 隔离依赖做单测、Testcontainers 起真环境做集成测试、STAR 把亮点变成量化故事、离线脚本把八章合并成总册。</li>
+<li><strong>为什么</strong>：面试官先看 README 与文档，再看测试与量化；文档会过期、测试会腐化，所以要用"覆盖率测试 + 严格 Mockito"把它们钉住。</li>
+<li><strong>怎么排错</strong>：文档缺失跑覆盖率测试；单测报 UnnecessaryStubbing 删多余 stub；并发偶发失败用 CountDownLatch 替代 sleep；打印异常查分页 CSS 与 UTF-8。</li>
+</ol>
+<hr />
+<h2>8.11 项目完成之后</h2>
+<p>八章主线到此闭环。继续深入的方向：</p>
+<ol>
+<li><strong>工程化</strong>：把 CI（GitHub Actions）跑起来，自动执行 90 个测试 + 构建镜像 + 推送；接入 SonarQube 看代码质量趋势。</li>
+<li><strong>数据规模</strong>：接入 ShardingSphere 做订单分库分表，Seata 处理订单-库存-支付分布式事务。</li>
+<li><strong>AI 进阶</strong>：把 mock Embedding 换成真实向量模型与向量数据库，加入多轮对话、工具编排与评测集。</li>
+<li><strong>可观测性</strong>：SkyWalking Agent 实机接入，Prometheus 加告警规则与压测基线。</li>
+<li><strong>铁路业务</strong>：扩展同车接续、跨站换乘、票额动态释放等更深规则。</li>
+</ol>
+<p>以上选学项（含 ShardingSphere、Seata、Spring Security、ElasticSearch、CI/CD、SonarQube、perf/eBPF、JVM、安全合规）的接入步骤与面试说法，见 <a href="../notes/supplement-topics.md"><code>docs/notes/supplement-topics.md</code></a>。</p>
+<p>项目虽收尾，学习网络仍在生长——这正是总复盘导图 <code>docs/mindmaps/99-final.md</code> 想表达的事。</p>
+</main>
+<footer class="print-footer">
+  <span>docs/print/chapter-08.html</span>
+  <span>第8章 项目收尾与包装</span>
+</footer>
+</body>
+</html>
